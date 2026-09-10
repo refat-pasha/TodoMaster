@@ -12,14 +12,62 @@ public class TodoController: Controller
         _context=context;
     }
     //get /todo
-    public async Task<IActionResult> Index()
+   public async Task<IActionResult> Index(
+    string? search,
+    string? status,
+    Priority? priority,
+    string? sort)
+{
+    var query = _context.Todos.AsQueryable();
+
+    // Search by title or description
+    if (!string.IsNullOrWhiteSpace(search))
     {
-        var todos = await _context.Todos
-        .OrderByDescending(t => t.CreatedAt)
-        .ToListAsync();
-        
-        return View(todos);
+        query = query.Where(t =>
+            t.Title.Contains(search) ||
+            (t.Description != null && t.Description.Contains(search)));
     }
+
+    // Filter by completion status
+    if (status == "completed")
+    {
+        query = query.Where(t => t.IsCompleted);
+    }
+    else if (status == "pending")
+    {
+        query = query.Where(t => !t.IsCompleted);
+    }
+
+    // Filter by priority
+    if (priority.HasValue)
+    {
+        query = query.Where(t => t.Priority == priority.Value);
+    }
+
+    // Sorting
+    query = sort switch
+    {
+        "oldest" => query.OrderBy(t => t.CreatedAt),
+
+        "dueDate" => query
+            .OrderBy(t => t.DueDate == null)
+            .ThenBy(t => t.DueDate),
+
+        "priority" => query
+            .OrderByDescending(t => t.Priority),
+
+        _ => query.OrderByDescending(t => t.CreatedAt)
+    };
+
+    var todos = await query.ToListAsync();
+
+    ViewBag.Search = search;
+    ViewBag.Status = status;
+    ViewBag.Priority = priority;
+    ViewBag.Sort = sort;
+
+    return View(todos);
+}
 
     // get todo/create
     public IActionResult Create()
