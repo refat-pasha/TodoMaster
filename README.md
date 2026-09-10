@@ -834,7 +834,7 @@ You can add a license here later, such as MIT, depending on how you want to dist
 
 # 👨‍💻 Author
 
-**Dev Master**
+**Refat Pasha**
 
 Built as a practical journey into:
 
