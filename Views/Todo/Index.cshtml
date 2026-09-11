@@ -21,6 +21,103 @@
     </div>
 
 
+    <!-- Todo Statistics -->
+    <div class="row g-3 mb-4">
+
+        <!-- Total -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">Total</p>
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.TotalCount
+                            </h3>
+                        </div>
+
+                        <div class="fs-2 text-primary">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Pending -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">Pending</p>
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.PendingCount
+                            </h3>
+                        </div>
+
+                        <div class="fs-2 text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Completed -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">Completed</p>
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.CompletedCount
+                            </h3>
+                        </div>
+
+                        <div class="fs-2 text-success">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Overdue -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">Overdue</p>
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.OverdueCount
+                            </h3>
+                        </div>
+
+                        <div class="fs-2 text-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
     <!-- Search & Filter -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
@@ -51,7 +148,14 @@
 
                         <select name="status" class="form-select">
 
-                            <option value="">All</option>
+                            @if (string.IsNullOrEmpty(ViewBag.Status))
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
 
                             @if (ViewBag.Status == "pending")
                             {
@@ -83,7 +187,14 @@
 
                         <select name="priority" class="form-select">
 
-                            <option value="">All</option>
+                            @if (ViewBag.Priority == null)
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
 
                             @foreach (TodoMaster.Models.Priority priority
                                      in Enum.GetValues<TodoMaster.Models.Priority>())
@@ -159,6 +270,7 @@
 
                         <button type="submit"
                                 class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-search"></i>
                             Search
                         </button>
 
@@ -196,6 +308,7 @@
 
                 <a asp-action="Create"
                    class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i>
                     Create Your First Todo
                 </a>
 
@@ -208,35 +321,45 @@
 
             @foreach (var todo in Model)
             {
+                var isOverdue = !todo.IsCompleted &&
+                                todo.DueDate.HasValue &&
+                                todo.DueDate.Value.Date < DateTime.Today;
+
                 <div class="col-12">
 
-                    <div class="card shadow-sm border-0">
+                    <div class="card shadow-sm border-0
+                                @(isOverdue ? "border-start border-4 border-danger" : "")">
 
                         <div class="card-body">
 
                             <div class="row align-items-center">
 
-                                <!-- Completion -->
+                                <!-- Complete / Undo -->
                                 <div class="col-auto">
 
-                                    @if (todo.IsCompleted)
-                                    {
-                                        <a asp-action="Complete"
-                                           asp-route-id="@todo.Id"
-                                           class="btn btn-success rounded-circle"
-                                           title="Mark as pending">
-                                            <i class="bi bi-check-lg"></i>
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <a asp-action="Complete"
-                                           asp-route-id="@todo.Id"
-                                           class="btn btn-outline-secondary rounded-circle"
-                                           title="Mark as completed">
-                                            <i class="bi bi-circle"></i>
-                                        </a>
-                                    }
+                                    <form asp-action="Complete"
+                                          asp-route-id="@todo.Id"
+                                          method="post"
+                                          class="d-inline">
+
+                                        @if (todo.IsCompleted)
+                                        {
+                                            <button type="submit"
+                                                    class="btn btn-success rounded-circle"
+                                                    title="Mark as pending">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit"
+                                                    class="btn btn-outline-secondary rounded-circle"
+                                                    title="Mark as completed">
+                                                <i class="bi bi-circle"></i>
+                                            </button>
+                                        }
+
+                                    </form>
 
                                 </div>
 
@@ -244,9 +367,16 @@
                                 <!-- Todo Information -->
                                 <div class="col">
 
+                                    <!-- Title -->
                                     @if (todo.IsCompleted)
                                     {
                                         <h5 class="mb-1 text-decoration-line-through text-muted">
+                                            @todo.Title
+                                        </h5>
+                                    }
+                                    else if (isOverdue)
+                                    {
+                                        <h5 class="mb-1 text-danger fw-semibold">
                                             @todo.Title
                                         </h5>
                                     }
@@ -257,6 +387,8 @@
                                         </h5>
                                     }
 
+
+                                    <!-- Description -->
                                     @if (!string.IsNullOrWhiteSpace(todo.Description))
                                     {
                                         <p class="text-muted mb-2">
@@ -269,18 +401,49 @@
                                     <div class="d-flex flex-wrap gap-2">
 
                                         <!-- Priority -->
-                                        <span class="badge bg-secondary">
-                                            @todo.Priority
-                                        </span>
+                                        @switch (todo.Priority.ToString())
+                                        {
+                                            case "High":
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-flag-fill"></i>
+                                                    High
+                                                </span>
+                                                break;
+
+                                            case "Medium":
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-flag-fill"></i>
+                                                    Medium
+                                                </span>
+                                                break;
+
+                                            default:
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-flag"></i>
+                                                    @todo.Priority
+                                                </span>
+                                                break;
+                                        }
 
 
                                         <!-- Due Date -->
                                         @if (todo.DueDate.HasValue)
                                         {
-                                            <span class="badge bg-light text-dark border">
-                                                <i class="bi bi-calendar3"></i>
-                                                @todo.DueDate.Value.ToString("dd MMM yyyy")
-                                            </span>
+                                            @if (isOverdue)
+                                            {
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                    Overdue:
+                                                    @todo.DueDate.Value.ToString("dd MMM yyyy")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-calendar3"></i>
+                                                    @todo.DueDate.Value.ToString("dd MMM yyyy")
+                                                </span>
+                                            }
                                         }
 
 
@@ -288,12 +451,21 @@
                                         @if (todo.IsCompleted)
                                         {
                                             <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i>
                                                 Completed
+                                            </span>
+                                        }
+                                        else if (isOverdue)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-exclamation-circle"></i>
+                                                Overdue
                                             </span>
                                         }
                                         else
                                         {
                                             <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-hourglass-split"></i>
                                                 Pending
                                             </span>
                                         }
@@ -308,28 +480,31 @@
 
                                     <div class="btn-group">
 
-    <a asp-action="Edit"
-       asp-route-id="@todo.Id"
-       class="btn btn-outline-primary"
-       title="Edit">
-        <i class="bi bi-pencil"></i>
-    </a>
+                                        <!-- Edit -->
+                                        <a asp-action="Edit"
+                                           asp-route-id="@todo.Id"
+                                           class="btn btn-outline-primary"
+                                           title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
 
-    <form asp-action="Delete"
-          asp-route-id="@todo.Id"
-          method="post"
-          class="d-inline"
-          onsubmit="return confirm('Are you sure you want to delete this todo?');">
 
-        <button type="submit"
-                class="btn btn-outline-danger"
-                title="Delete">
-            <i class="bi bi-trash"></i>
-        </button>
+                                        <!-- Delete -->
+                                        <form asp-action="Delete"
+                                              asp-route-id="@todo.Id"
+                                              method="post"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Are you sure you want to delete this todo?');">
 
-    </form>
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger"
+                                                    title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
 
-</div>
+                                        </form>
+
+                                    </div>
 
                                 </div>
 

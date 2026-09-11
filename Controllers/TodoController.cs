@@ -20,15 +20,16 @@ public class TodoController: Controller
 {
     var query = _context.Todos.AsQueryable();
 
-    // Search by title or description
+    // Search
     if (!string.IsNullOrWhiteSpace(search))
     {
         query = query.Where(t =>
             t.Title.Contains(search) ||
-            (t.Description != null && t.Description.Contains(search)));
+            (t.Description != null &&
+             t.Description.Contains(search)));
     }
 
-    // Filter by completion status
+    // Status filter
     if (status == "completed")
     {
         query = query.Where(t => t.IsCompleted);
@@ -38,7 +39,7 @@ public class TodoController: Controller
         query = query.Where(t => !t.IsCompleted);
     }
 
-    // Filter by priority
+    // Priority filter
     if (priority.HasValue)
     {
         query = query.Where(t => t.Priority == priority.Value);
@@ -47,20 +48,45 @@ public class TodoController: Controller
     // Sorting
     query = sort switch
     {
-        "oldest" => query.OrderBy(t => t.CreatedAt),
+        "oldest" =>
+            query.OrderBy(t => t.CreatedAt),
 
-        "dueDate" => query
-            .OrderBy(t => t.DueDate == null)
-            .ThenBy(t => t.DueDate),
+        "dueDate" =>
+            query.OrderBy(t => t.DueDate == null)
+                 .ThenBy(t => t.DueDate),
 
-        "priority" => query
-            .OrderByDescending(t => t.Priority),
+        "priority" =>
+            query.OrderByDescending(t => t.Priority),
 
-        _ => query.OrderByDescending(t => t.CreatedAt)
+        _ =>
+            query.OrderByDescending(t => t.CreatedAt)
     };
 
     var todos = await query.ToListAsync();
 
+
+    // ==============================
+    // Todo Statistics
+    // ==============================
+
+    var allTodos = await _context.Todos.ToListAsync();
+
+    ViewBag.TotalCount = allTodos.Count;
+
+    ViewBag.CompletedCount =
+        allTodos.Count(t => t.IsCompleted);
+
+    ViewBag.PendingCount =
+        allTodos.Count(t => !t.IsCompleted);
+
+    ViewBag.OverdueCount =
+        allTodos.Count(t =>
+            !t.IsCompleted &&
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date < DateTime.Today);
+
+
+    // Preserve filters
     ViewBag.Search = search;
     ViewBag.Status = status;
     ViewBag.Priority = priority;
@@ -137,18 +163,22 @@ public class TodoController: Controller
 }
 //post todo/complete/3
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Complete(int id)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Complete(int id)
+{
+    var todo = await _context.Todos.FindAsync(id);
+
+    if (todo == null)
     {
-        var todo = await _context.Todos.FindAsync(id);
-        if (todo == null)
-        {
-            return NotFound();
-        }
-        todo.IsCompleted = true;
-        _context.Todos.Update(todo);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
+        return NotFound();
     }
+
+    // Toggle completion status
+    todo.IsCompleted = !todo.IsCompleted;
+
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction(nameof(Index));
+}
 
 }
