@@ -1,4 +1,3 @@
-
 @model IEnumerable<TodoMaster.Models.Todo>
 
 @{
@@ -19,7 +18,6 @@
             Add Todo
         </a>
     </div>
-
 
     <!-- Todo Statistics -->
     <div class="row g-3 mb-4">
@@ -46,7 +44,6 @@
             </div>
         </div>
 
-
         <!-- Pending -->
         <div class="col-md-3">
             <div class="card shadow-sm border-0 h-100">
@@ -69,7 +66,6 @@
             </div>
         </div>
 
-
         <!-- Completed -->
         <div class="col-md-3">
             <div class="card shadow-sm border-0 h-100">
@@ -91,7 +87,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Overdue -->
         <div class="col-md-3">
@@ -117,7 +112,6 @@
 
     </div>
 
-
     <!-- Search & Filter -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
@@ -126,201 +120,200 @@
 
                 <div class="row g-3">
 
-    <!-- Search -->
-    <div class="col-lg-3 col-md-6">
-        <label class="form-label fw-semibold">
-            Search
-        </label>
+                    <!-- Search -->
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">
+                            Search
+                        </label>
 
-        <input type="text"
-               name="search"
-               value="@ViewBag.Search"
-               class="form-control"
-               placeholder="Search todos..." />
-    </div>
+                        <input type="text"
+                               name="search"
+                               value="@ViewBag.Search"
+                               class="form-control"
+                               placeholder="Search todos..." />
+                    </div>
 
-    <!-- Status -->
-    <div class="col-lg-2 col-md-6">
-        <label class="form-label fw-semibold">
-            Status
-        </label>
+                    <!-- Status -->
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">
+                            Status
+                        </label>
 
-        <select name="status" class="form-select">
+                        <select name="status" class="form-select">
 
-            @if (string.IsNullOrEmpty(ViewBag.Status))
-            {
-                <option value="" selected>All</option>
-            }
-            else
-            {
-                <option value="">All</option>
-            }
+                            @if (string.IsNullOrEmpty(ViewBag.Status))
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
 
-            @if (ViewBag.Status == "pending")
-            {
-                <option value="pending" selected>Pending</option>
-            }
-            else
-            {
-                <option value="pending">Pending</option>
-            }
+                            @if (ViewBag.Status == "pending")
+                            {
+                                <option value="pending" selected>Pending</option>
+                            }
+                            else
+                            {
+                                <option value="pending">Pending</option>
+                            }
 
-            @if (ViewBag.Status == "completed")
-            {
-                <option value="completed" selected>Completed</option>
-            }
-            else
-            {
-                <option value="completed">Completed</option>
-            }
+                            @if (ViewBag.Status == "completed")
+                            {
+                                <option value="completed" selected>Completed</option>
+                            }
+                            else
+                            {
+                                <option value="completed">Completed</option>
+                            }
 
-        </select>
-    </div>
+                        </select>
+                    </div>
 
-    <!-- Priority -->
-    <div class="col-lg-2 col-md-6">
-        <label class="form-label fw-semibold">
-            Priority
-        </label>
+                    <!-- Priority -->
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">
+                            Priority
+                        </label>
 
-        <select name="priority" class="form-select">
+                        <select name="priority" class="form-select">
 
-            @if (ViewBag.Priority == null)
-            {
-                <option value="" selected>All</option>
-            }
-            else
-            {
-                <option value="">All</option>
-            }
+                            @if (ViewBag.Priority == null)
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
 
-            @foreach (TodoMaster.Models.Priority priority
-                     in Enum.GetValues<TodoMaster.Models.Priority>())
-            {
-                if (ViewBag.Priority?.ToString() == priority.ToString())
-                {
-                    <option value="@priority" selected>
-                        @priority
-                    </option>
-                }
-                else
-                {
-                    <option value="@priority">
-                        @priority
-                    </option>
-                }
-            }
+                            @foreach (TodoMaster.Models.Priority priority
+                                     in Enum.GetValues<TodoMaster.Models.Priority>())
+                            {
+                                if (ViewBag.Priority?.ToString() == priority.ToString())
+                                {
+                                    <option value="@priority" selected>
+                                        @priority
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@priority">
+                                        @priority
+                                    </option>
+                                }
+                            }
 
-        </select>
-    </div>
+                        </select>
+                    </div>
 
-    <!-- Category -->
-    <div class="col-lg-2 col-md-6">
-        <label class="form-label fw-semibold">
-            Category
-        </label>
+                    <!-- Category -->
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">
+                            Category
+                        </label>
 
-        <select name="categoryId" class="form-select">
+                        <select name="categoryId" class="form-select">
 
-            @if (ViewBag.CategoryId == null)
-            {
-                <option value="" selected>All</option>
-            }
-            else
-            {
-                <option value="">All</option>
-            }
+                            @if (ViewBag.CategoryId == null)
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
 
-            @foreach (var category in ViewBag.Categories)
-            {
-                if (ViewBag.CategoryId?.ToString() == category.Id.ToString())
-                {
-                    <option value="@category.Id" selected>
-                        @category.Name
-                    </option>
-                }
-                else
-                {
-                    <option value="@category.Id">
-                        @category.Name
-                    </option>
-                }
-            }
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                if (ViewBag.CategoryId?.ToString() == category.Id.ToString())
+                                {
+                                    <option value="@category.Id" selected>
+                                        @category.Name
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@category.Id">
+                                        @category.Name
+                                    </option>
+                                }
+                            }
 
-        </select>
-    </div>
+                        </select>
+                    </div>
 
-    <!-- Sort -->
-    <div class="col-lg-2 col-md-6">
-        <label class="form-label fw-semibold">
-            Sort By
-        </label>
+                    <!-- Sort -->
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">
+                            Sort By
+                        </label>
 
-        <select name="sort" class="form-select">
+                        <select name="sort" class="form-select">
 
-            @if (string.IsNullOrEmpty(ViewBag.Sort))
-            {
-                <option value="" selected>Newest</option>
-            }
-            else
-            {
-                <option value="">Newest</option>
-            }
+                            @if (string.IsNullOrEmpty(ViewBag.Sort))
+                            {
+                                <option value="" selected>Newest</option>
+                            }
+                            else
+                            {
+                                <option value="">Newest</option>
+                            }
 
-            @if (ViewBag.Sort == "oldest")
-            {
-                <option value="oldest" selected>Oldest</option>
-            }
-            else
-            {
-                <option value="oldest">Oldest</option>
-            }
+                            @if (ViewBag.Sort == "oldest")
+                            {
+                                <option value="oldest" selected>Oldest</option>
+                            }
+                            else
+                            {
+                                <option value="oldest">Oldest</option>
+                            }
 
-            @if (ViewBag.Sort == "dueDate")
-            {
-                <option value="dueDate" selected>Due Date</option>
-            }
-            else
-            {
-                <option value="dueDate">Due Date</option>
-            }
+                            @if (ViewBag.Sort == "dueDate")
+                            {
+                                <option value="dueDate" selected>Due Date</option>
+                            }
+                            else
+                            {
+                                <option value="dueDate">Due Date</option>
+                            }
 
-            @if (ViewBag.Sort == "priority")
-            {
-                <option value="priority" selected>Priority</option>
-            }
-            else
-            {
-                <option value="priority">Priority</option>
-            }
+                            @if (ViewBag.Sort == "priority")
+                            {
+                                <option value="priority" selected>Priority</option>
+                            }
+                            else
+                            {
+                                <option value="priority">Priority</option>
+                            }
 
-        </select>
-    </div>
+                        </select>
+                    </div>
 
-    <!-- Buttons -->
-    <div class="col-lg-1 col-md-12 d-flex align-items-end gap-2">
+                    <!-- Buttons -->
+                    <div class="col-lg-1 col-md-12 d-flex align-items-end gap-2">
 
-        <button type="submit"
-                class="btn btn-primary"
-                title="Apply filters">
-            <i class="bi bi-search"></i>
-        </button>
+                        <button type="submit"
+                                class="btn btn-primary"
+                                title="Apply filters">
+                            <i class="bi bi-search"></i>
+                        </button>
 
-        <a asp-action="Index"
-           class="btn btn-outline-secondary"
-           title="Reset filters">
-            <i class="bi bi-arrow-counterclockwise"></i>
-        </a>
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary"
+                           title="Reset filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
 
-    </div>
+                    </div>
 
-</div>
+                </div>
 
             </form>
 
         </div>
     </div>
-
 
     <!-- Todo List -->
 
@@ -396,7 +389,6 @@
 
                                 </div>
 
-
                                 <!-- Todo Information -->
                                 <div class="col">
 
@@ -420,7 +412,6 @@
                                         </h5>
                                     }
 
-
                                     <!-- Description -->
                                     @if (!string.IsNullOrWhiteSpace(todo.Description))
                                     {
@@ -428,7 +419,6 @@
                                             @todo.Description
                                         </p>
                                     }
-
 
                                     <!-- Metadata -->
                                     <div class="d-flex flex-wrap gap-2">
@@ -458,6 +448,26 @@
                                                 break;
                                         }
 
+                                        <!-- Category -->
+                                        @if (todo.Category != null)
+                                        {
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-folder"></i>
+                                                @todo.Category.Name
+                                            </span>
+                                        }
+
+                                        <!-- Tags -->
+                                        @if (todo.Tags.Any())
+                                        {
+                                            foreach (var tag in todo.Tags)
+                                            {
+                                                <span class="badge bg-light text-dark border">
+                                                    <i class="bi bi-tag"></i>
+                                                    @tag.Name
+                                                </span>
+                                            }
+                                        }
 
                                         <!-- Due Date -->
                                         @if (todo.DueDate.HasValue)
@@ -478,7 +488,6 @@
                                                 </span>
                                             }
                                         }
-
 
                                         <!-- Status -->
                                         @if (todo.IsCompleted)
@@ -507,7 +516,6 @@
 
                                 </div>
 
-
                                 <!-- Actions -->
                                 <div class="col-auto">
 
@@ -520,7 +528,6 @@
                                            title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-
 
                                         <!-- Delete -->
                                         <form asp-action="Delete"
@@ -554,4 +561,3 @@
     }
 
 </div>
-

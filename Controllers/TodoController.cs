@@ -20,8 +20,9 @@ public async Task<IActionResult> Index(
     string? sort)
 {
     var query = _context.Todos
-        .Include(t => t.Category)
-        .AsQueryable();
+    .Include(t => t.Category)
+    .Include(t => t.Tags)
+    .AsQueryable();
 
     // Search
     if (!string.IsNullOrWhiteSpace(search))
@@ -104,21 +105,25 @@ public async Task<IActionResult> Index(
 }
    
 
-    // GET: /Todo/Create
+
+// GET: /Todo/Create
 public async Task<IActionResult> Create()
 {
     ViewBag.Categories = await _context.Categories
         .OrderBy(c => c.Name)
         .ToListAsync();
 
+    ViewBag.Tags = await _context.Tags
+        .OrderBy(t => t.Name)
+        .ToListAsync();
+
     return View();
 }
 
-
-  // POST: /Todo/Create
+// POST: /Todo/Create
 [HttpPost]
 [ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(Todo todo)
+public async Task<IActionResult> Create(Todo todo, int[] selectedTags)
 {
     if (!ModelState.IsValid)
     {
@@ -126,7 +131,18 @@ public async Task<IActionResult> Create(Todo todo)
             .OrderBy(c => c.Name)
             .ToListAsync();
 
+        ViewBag.Tags = await _context.Tags
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+
         return View(todo);
+    }
+
+    if (selectedTags.Length > 0)
+    {
+        todo.Tags = await _context.Tags
+            .Where(t => selectedTags.Contains(t.Id))
+            .ToListAsync();
     }
 
     _context.Todos.Add(todo);
@@ -137,10 +153,13 @@ public async Task<IActionResult> Create(Todo todo)
 
 
 
-   // GET: /Todo/Edit/3
+
+  // GET: /Todo/Edit/3
 public async Task<IActionResult> Edit(int id)
 {
-    var todo = await _context.Todos.FindAsync(id);
+    var todo = await _context.Todos
+        .Include(t => t.Tags)
+        .FirstOrDefaultAsync(t => t.Id == id);
 
     if (todo == null)
     {
@@ -151,14 +170,21 @@ public async Task<IActionResult> Edit(int id)
         .OrderBy(c => c.Name)
         .ToListAsync();
 
+    ViewBag.Tags = await _context.Tags
+        .OrderBy(t => t.Name)
+        .ToListAsync();
+
     return View(todo);
 }
 
 
-  // POST: /Todo/Edit/3
+// POST: /Todo/Edit/3
 [HttpPost]
 [ValidateAntiForgeryToken]
-public async Task<IActionResult> Edit(int id, Todo todo)
+public async Task<IActionResult> Edit(
+    int id,
+    Todo todo,
+    int[] selectedTags)
 {
     if (id != todo.Id)
     {
@@ -171,10 +197,43 @@ public async Task<IActionResult> Edit(int id, Todo todo)
             .OrderBy(c => c.Name)
             .ToListAsync();
 
+        ViewBag.Tags = await _context.Tags
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+
         return View(todo);
     }
 
-    _context.Todos.Update(todo);
+    var existingTodo = await _context.Todos
+        .Include(t => t.Tags)
+        .FirstOrDefaultAsync(t => t.Id == id);
+
+    if (existingTodo == null)
+    {
+        return NotFound();
+    }
+
+    existingTodo.Title = todo.Title;
+    existingTodo.Description = todo.Description;
+    existingTodo.Priority = todo.Priority;
+    existingTodo.DueDate = todo.DueDate;
+    existingTodo.IsCompleted = todo.IsCompleted;
+    existingTodo.CategoryId = todo.CategoryId;
+
+    existingTodo.Tags.Clear();
+
+    if (selectedTags.Length > 0)
+    {
+        var tags = await _context.Tags
+            .Where(t => selectedTags.Contains(t.Id))
+            .ToListAsync();
+
+        foreach (var tag in tags)
+        {
+            existingTodo.Tags.Add(tag);
+        }
+    }
+
     await _context.SaveChangesAsync();
 
     return RedirectToAction(nameof(Index));
