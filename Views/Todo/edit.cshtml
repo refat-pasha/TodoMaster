@@ -1,9 +1,26 @@
 @model TodoMaster.Models.Todo
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
 ViewData["Title"] = "Edit Todo";
 }
 
+
+<div class="mb-3">
+    <label asp-for="CategoryId" class="form-label fw-semibold">
+        Category
+    </label>
+
+    <select asp-for="CategoryId"
+            class="form-select"
+            asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+        <option value="">-- No Category --</option>
+    </select>
+
+    <span asp-validation-for="CategoryId"
+          class="text-danger">
+    </span>
+</div>
 <div class="container mt-4">
 
 ```

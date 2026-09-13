@@ -126,162 +126,195 @@
 
                 <div class="row g-3">
 
-                    <!-- Search -->
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label fw-semibold">
-                            Search
-                        </label>
+    <!-- Search -->
+    <div class="col-lg-3 col-md-6">
+        <label class="form-label fw-semibold">
+            Search
+        </label>
 
-                        <input type="text"
-                               name="search"
-                               value="@ViewBag.Search"
-                               class="form-control"
-                               placeholder="Search by title or description..." />
-                    </div>
+        <input type="text"
+               name="search"
+               value="@ViewBag.Search"
+               class="form-control"
+               placeholder="Search todos..." />
+    </div>
 
+    <!-- Status -->
+    <div class="col-lg-2 col-md-6">
+        <label class="form-label fw-semibold">
+            Status
+        </label>
 
-                    <!-- Status -->
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label fw-semibold">
-                            Status
-                        </label>
+        <select name="status" class="form-select">
 
-                        <select name="status" class="form-select">
+            @if (string.IsNullOrEmpty(ViewBag.Status))
+            {
+                <option value="" selected>All</option>
+            }
+            else
+            {
+                <option value="">All</option>
+            }
 
-                            @if (string.IsNullOrEmpty(ViewBag.Status))
-                            {
-                                <option value="" selected>All</option>
-                            }
-                            else
-                            {
-                                <option value="">All</option>
-                            }
+            @if (ViewBag.Status == "pending")
+            {
+                <option value="pending" selected>Pending</option>
+            }
+            else
+            {
+                <option value="pending">Pending</option>
+            }
 
-                            @if (ViewBag.Status == "pending")
-                            {
-                                <option value="pending" selected>Pending</option>
-                            }
-                            else
-                            {
-                                <option value="pending">Pending</option>
-                            }
+            @if (ViewBag.Status == "completed")
+            {
+                <option value="completed" selected>Completed</option>
+            }
+            else
+            {
+                <option value="completed">Completed</option>
+            }
 
-                            @if (ViewBag.Status == "completed")
-                            {
-                                <option value="completed" selected>Completed</option>
-                            }
-                            else
-                            {
-                                <option value="completed">Completed</option>
-                            }
+        </select>
+    </div>
 
-                        </select>
-                    </div>
+    <!-- Priority -->
+    <div class="col-lg-2 col-md-6">
+        <label class="form-label fw-semibold">
+            Priority
+        </label>
 
+        <select name="priority" class="form-select">
 
-                    <!-- Priority -->
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label fw-semibold">
-                            Priority
-                        </label>
+            @if (ViewBag.Priority == null)
+            {
+                <option value="" selected>All</option>
+            }
+            else
+            {
+                <option value="">All</option>
+            }
 
-                        <select name="priority" class="form-select">
+            @foreach (TodoMaster.Models.Priority priority
+                     in Enum.GetValues<TodoMaster.Models.Priority>())
+            {
+                if (ViewBag.Priority?.ToString() == priority.ToString())
+                {
+                    <option value="@priority" selected>
+                        @priority
+                    </option>
+                }
+                else
+                {
+                    <option value="@priority">
+                        @priority
+                    </option>
+                }
+            }
 
-                            @if (ViewBag.Priority == null)
-                            {
-                                <option value="" selected>All</option>
-                            }
-                            else
-                            {
-                                <option value="">All</option>
-                            }
+        </select>
+    </div>
 
-                            @foreach (TodoMaster.Models.Priority priority
-                                     in Enum.GetValues<TodoMaster.Models.Priority>())
-                            {
-                                if (ViewBag.Priority?.ToString() == priority.ToString())
-                                {
-                                    <option value="@priority" selected>
-                                        @priority
-                                    </option>
-                                }
-                                else
-                                {
-                                    <option value="@priority">
-                                        @priority
-                                    </option>
-                                }
-                            }
+    <!-- Category -->
+    <div class="col-lg-2 col-md-6">
+        <label class="form-label fw-semibold">
+            Category
+        </label>
 
-                        </select>
-                    </div>
+        <select name="categoryId" class="form-select">
 
+            @if (ViewBag.CategoryId == null)
+            {
+                <option value="" selected>All</option>
+            }
+            else
+            {
+                <option value="">All</option>
+            }
 
-                    <!-- Sort -->
-                    <div class="col-lg-2 col-md-6">
-                        <label class="form-label fw-semibold">
-                            Sort By
-                        </label>
+            @foreach (var category in ViewBag.Categories)
+            {
+                if (ViewBag.CategoryId?.ToString() == category.Id.ToString())
+                {
+                    <option value="@category.Id" selected>
+                        @category.Name
+                    </option>
+                }
+                else
+                {
+                    <option value="@category.Id">
+                        @category.Name
+                    </option>
+                }
+            }
 
-                        <select name="sort" class="form-select">
+        </select>
+    </div>
 
-                            @if (string.IsNullOrEmpty(ViewBag.Sort))
-                            {
-                                <option value="" selected>Newest</option>
-                            }
-                            else
-                            {
-                                <option value="">Newest</option>
-                            }
+    <!-- Sort -->
+    <div class="col-lg-2 col-md-6">
+        <label class="form-label fw-semibold">
+            Sort By
+        </label>
 
-                            @if (ViewBag.Sort == "oldest")
-                            {
-                                <option value="oldest" selected>Oldest</option>
-                            }
-                            else
-                            {
-                                <option value="oldest">Oldest</option>
-                            }
+        <select name="sort" class="form-select">
 
-                            @if (ViewBag.Sort == "dueDate")
-                            {
-                                <option value="dueDate" selected>Due Date</option>
-                            }
-                            else
-                            {
-                                <option value="dueDate">Due Date</option>
-                            }
+            @if (string.IsNullOrEmpty(ViewBag.Sort))
+            {
+                <option value="" selected>Newest</option>
+            }
+            else
+            {
+                <option value="">Newest</option>
+            }
 
-                            @if (ViewBag.Sort == "priority")
-                            {
-                                <option value="priority" selected>Priority</option>
-                            }
-                            else
-                            {
-                                <option value="priority">Priority</option>
-                            }
+            @if (ViewBag.Sort == "oldest")
+            {
+                <option value="oldest" selected>Oldest</option>
+            }
+            else
+            {
+                <option value="oldest">Oldest</option>
+            }
 
-                        </select>
-                    </div>
+            @if (ViewBag.Sort == "dueDate")
+            {
+                <option value="dueDate" selected>Due Date</option>
+            }
+            else
+            {
+                <option value="dueDate">Due Date</option>
+            }
 
+            @if (ViewBag.Sort == "priority")
+            {
+                <option value="priority" selected>Priority</option>
+            }
+            else
+            {
+                <option value="priority">Priority</option>
+            }
 
-                    <!-- Buttons -->
-                    <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2">
+        </select>
+    </div>
 
-                        <button type="submit"
-                                class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-search"></i>
-                            Search
-                        </button>
+    <!-- Buttons -->
+    <div class="col-lg-1 col-md-12 d-flex align-items-end gap-2">
 
-                        <a asp-action="Index"
-                           class="btn btn-outline-secondary">
-                            Reset
-                        </a>
+        <button type="submit"
+                class="btn btn-primary"
+                title="Apply filters">
+            <i class="bi bi-search"></i>
+        </button>
 
-                    </div>
+        <a asp-action="Index"
+           class="btn btn-outline-secondary"
+           title="Reset filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
 
-                </div>
+    </div>
+
+</div>
 
             </form>
 
