@@ -31,20 +31,28 @@ public class CategoryController : Controller
     }
 
     // POST: /Category/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Category category)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(Category category)
+{
+    if (await _context.Categories
+        .AnyAsync(c => c.Name.ToLower() == category.Name.ToLower()))
     {
-        if (!ModelState.IsValid)
-        {
-            return View(category);
-        }
-
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction(nameof(Index));
+        ModelState.AddModelError(
+            "Name",
+            "A category with this name already exists.");
     }
+
+    if (!ModelState.IsValid)
+    {
+        return View(category);
+    }
+
+    _context.Categories.Add(category);
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction(nameof(Index));
+}
 
     // GET: /Category/Edit/3
     public async Task<IActionResult> Edit(int id)
@@ -58,43 +66,62 @@ public class CategoryController : Controller
 
         return View(category);
     }
-
-    // POST: /Category/Edit/3
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, Category category)
+// POST: /Category/Edit/3
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(int id, Category category)
+{
+    if (id != category.Id)
     {
-        if (id != category.Id)
-        {
-            return BadRequest();
-        }
-
-        if (!ModelState.IsValid)
-        {
-            return View(category);
-        }
-
-        _context.Categories.Update(category);
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction(nameof(Index));
+        return BadRequest();
     }
+
+    if (await _context.Categories
+        .AnyAsync(c =>
+            c.Id != category.Id &&
+            c.Name.ToLower() == category.Name.ToLower()))
+    {
+        ModelState.AddModelError(
+            "Name",
+            "A category with this name already exists.");
+    }
+
+    if (!ModelState.IsValid)
+    {
+        return View(category);
+    }
+
+    _context.Categories.Update(category);
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction(nameof(Index));
+}
 
     // POST: /Category/Delete/3
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(int id)
+{
+    var category = await _context.Categories.FindAsync(id);
+
+    if (category == null)
     {
-        var category = await _context.Categories.FindAsync(id);
-
-        if (category == null)
-        {
-            return NotFound();
-        }
-
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction(nameof(Index));
+        return NotFound();
     }
+
+    var todos = await _context.Todos
+        .Where(t => t.CategoryId == id)
+        .ToListAsync();
+
+    foreach (var todo in todos)
+    {
+        todo.CategoryId = null;
+    }
+
+    _context.Categories.Remove(category);
+
+    await _context.SaveChangesAsync();
+
+    return RedirectToAction(nameof(Index));
+}
 }

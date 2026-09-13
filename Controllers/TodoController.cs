@@ -17,6 +17,7 @@ public async Task<IActionResult> Index(
     string? status,
     Priority? priority,
     int? categoryId,
+    int? tagId,
     string? sort)
 {
     var query = _context.Todos
@@ -54,6 +55,12 @@ public async Task<IActionResult> Index(
     {
         query = query.Where(t => t.CategoryId == categoryId.Value);
     }
+    // Tag filter
+if (tagId.HasValue)
+{
+    query = query.Where(t =>
+        t.Tags.Any(tag => tag.Id == tagId.Value));
+}
 
     // Sorting
     query = sort switch
@@ -72,37 +79,42 @@ public async Task<IActionResult> Index(
 
     var todos = await query.ToListAsync();
 
-    // Statistics
-    var allTodos = await _context.Todos.ToListAsync();
+// Statistics
+var allTodos = await _context.Todos.ToListAsync();
 
-    ViewBag.TotalCount = allTodos.Count;
+ViewBag.TotalCount = allTodos.Count;
 
-    ViewBag.CompletedCount =
-        allTodos.Count(t => t.IsCompleted);
+ViewBag.CompletedCount =
+    allTodos.Count(t => t.IsCompleted);
 
-    ViewBag.PendingCount =
-        allTodos.Count(t => !t.IsCompleted);
+ViewBag.PendingCount =
+    allTodos.Count(t => !t.IsCompleted);
 
-    ViewBag.OverdueCount =
-        allTodos.Count(t =>
-            !t.IsCompleted &&
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date < DateTime.Today);
+ViewBag.OverdueCount =
+    allTodos.Count(t =>
+        !t.IsCompleted &&
+        t.DueDate.HasValue &&
+        t.DueDate.Value.Date < DateTime.Today);
 
-    // Filter values
-    ViewBag.Search = search;
-    ViewBag.Status = status;
-    ViewBag.Priority = priority;
-    ViewBag.CategoryId = categoryId;
-    ViewBag.Sort = sort;
+// Filter values
+ViewBag.Search = search;
+ViewBag.Status = status;
+ViewBag.Priority = priority;
+ViewBag.CategoryId = categoryId;
+ViewBag.TagId = tagId;
+ViewBag.Sort = sort;
 
-    // Categories for filter dropdown
-    ViewBag.Categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .ToListAsync();
+// Categories
+ViewBag.Categories = await _context.Categories
+    .OrderBy(c => c.Name)
+    .ToListAsync();
 
-    return View(todos);
-}
+// Tags
+ViewBag.Tags = await _context.Tags
+    .OrderBy(t => t.Name)
+    .ToListAsync();
+
+return View(todos);}
    
 
 
