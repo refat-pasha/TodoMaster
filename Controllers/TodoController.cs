@@ -1,17 +1,27 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using TodoMaster.Data;
 using TodoMaster.Models;
+using TodoMaster.Services;
+using TodoMaster.ViewModels;
 
-namespace TodoMaster.Controllers;
-public class TodoController: Controller
+namespace TodoMaster.Controllers
 {
-    private readonly AppDbContext _context;
-    public TodoController(AppDbContext context)
+    public class TodoController : Controller
     {
-        _context=context;
-    }
-   // GET: /Todo
+        private readonly ITodoService _todoService;
+        private readonly AppDbContext _context;
+
+        public TodoController(
+            ITodoService todoService,
+            AppDbContext context)
+        {
+            _todoService = todoService;
+            _context = context;
+        }
+
+       // GET: /Todo
 public async Task<IActionResult> Index(
     string? search,
     string? status,
@@ -20,163 +30,13 @@ public async Task<IActionResult> Index(
     int? tagId,
     string? sort)
 {
-    var query = _context.Todos
-    .Include(t => t.Category)
-    .Include(t => t.Tags)
-    .AsQueryable();
-
-    // Search
-    if (!string.IsNullOrWhiteSpace(search))
-    {
-        query = query.Where(t =>
-            t.Title.Contains(search) ||
-            (t.Description != null &&
-             t.Description.Contains(search)));
-    }
-
-    // Status filter
-    if (status == "completed")
-    {
-        query = query.Where(t => t.IsCompleted);
-    }
-    else if (status == "pending")
-    {
-        query = query.Where(t => !t.IsCompleted);
-    }
-
-    // Priority filter
-    if (priority.HasValue)
-    {
-        query = query.Where(t => t.Priority == priority.Value);
-    }
-
-    // Category filter
-    if (categoryId.HasValue)
-    {
-        query = query.Where(t => t.CategoryId == categoryId.Value);
-    }
-    // Tag filter
-if (tagId.HasValue)
-{
-    query = query.Where(t =>
-        t.Tags.Any(tag => tag.Id == tagId.Value));
-}
-
-    // Sorting
-    query = sort switch
-    {
-        "oldest" => query.OrderBy(t => t.CreatedAt),
-
-        "dueDate" => query
-            .OrderBy(t => t.DueDate == null)
-            .ThenBy(t => t.DueDate),
-
-        "priority" => query
-            .OrderByDescending(t => t.Priority),
-
-        _ => query.OrderByDescending(t => t.CreatedAt)
-    };
-
-    var todos = await query.ToListAsync();
-
-// Statistics
-var allTodos = await _context.Todos.ToListAsync();
-
-ViewBag.TotalCount = allTodos.Count;
-
-ViewBag.CompletedCount =
-    allTodos.Count(t => t.IsCompleted);
-
-ViewBag.PendingCount =
-    allTodos.Count(t => !t.IsCompleted);
-
-ViewBag.OverdueCount =
-    allTodos.Count(t =>
-        !t.IsCompleted &&
-        t.DueDate.HasValue &&
-        t.DueDate.Value.Date < DateTime.Today);
-
-// Filter values
-ViewBag.Search = search;
-ViewBag.Status = status;
-ViewBag.Priority = priority;
-ViewBag.CategoryId = categoryId;
-ViewBag.TagId = tagId;
-ViewBag.Sort = sort;
-
-// Categories
-ViewBag.Categories = await _context.Categories
-    .OrderBy(c => c.Name)
-    .ToListAsync();
-
-// Tags
-ViewBag.Tags = await _context.Tags
-    .OrderBy(t => t.Name)
-    .ToListAsync();
-
-return View(todos);}
-   
-
-
-// GET: /Todo/Create
-public async Task<IActionResult> Create()
-{
-    ViewBag.Categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .ToListAsync();
-
-    ViewBag.Tags = await _context.Tags
-        .OrderBy(t => t.Name)
-        .ToListAsync();
-
-    return View();
-}
-
-// POST: /Todo/Create
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(Todo todo, int[] selectedTags)
-{
-    if (!ModelState.IsValid)
-    {
-        ViewBag.Categories = await _context.Categories
-            .OrderBy(c => c.Name)
-            .ToListAsync();
-
-        ViewBag.Tags = await _context.Tags
-            .OrderBy(t => t.Name)
-            .ToListAsync();
-
-        return View(todo);
-    }
-
-    if (selectedTags.Length > 0)
-    {
-        todo.Tags = await _context.Tags
-            .Where(t => selectedTags.Contains(t.Id))
-            .ToListAsync();
-    }
-
-    _context.Todos.Add(todo);
-    await _context.SaveChangesAsync();
-
-    return RedirectToAction(nameof(Index));
-}
-
-
-
-
-  // GET: /Todo/Edit/3
-public async Task<IActionResult> Edit(int id)
-{
-    var todo = await _context.Todos
-        .Include(t => t.Tags)
-        .FirstOrDefaultAsync(t => t.Id == id);
-
-    if (todo == null)
-    {
-        return NotFound();
-    }
+    var model = await _todoService.GetTodosAsync(
+        searchTerm: search,
+        statusFilter: status,
+        priorityFilter: priority?.ToString(),
+        categoryFilter: categoryId,
+        tagFilter: tagId,
+        sortOrder: sort ?? "created_desc");
 
     ViewBag.Categories = await _context.Categories
         .OrderBy(c => c.Name)
@@ -186,103 +46,161 @@ public async Task<IActionResult> Edit(int id)
         .OrderBy(t => t.Name)
         .ToListAsync();
 
-    return View(todo);
+    return View(model);
 }
 
-
-// POST: /Todo/Edit/3
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Edit(
-    int id,
-    Todo todo,
-    int[] selectedTags)
-{
-    if (id != todo.Id)
-    {
-        return BadRequest();
-    }
-
-    if (!ModelState.IsValid)
-    {
-        ViewBag.Categories = await _context.Categories
-            .OrderBy(c => c.Name)
-            .ToListAsync();
-
-        ViewBag.Tags = await _context.Tags
-            .OrderBy(t => t.Name)
-            .ToListAsync();
-
-        return View(todo);
-    }
-
-    var existingTodo = await _context.Todos
-        .Include(t => t.Tags)
-        .FirstOrDefaultAsync(t => t.Id == id);
-
-    if (existingTodo == null)
-    {
-        return NotFound();
-    }
-
-    existingTodo.Title = todo.Title;
-    existingTodo.Description = todo.Description;
-    existingTodo.Priority = todo.Priority;
-    existingTodo.DueDate = todo.DueDate;
-    existingTodo.IsCompleted = todo.IsCompleted;
-    existingTodo.CategoryId = todo.CategoryId;
-
-    existingTodo.Tags.Clear();
-
-    if (selectedTags.Length > 0)
-    {
-        var tags = await _context.Tags
-            .Where(t => selectedTags.Contains(t.Id))
-            .ToListAsync();
-
-        foreach (var tag in tags)
+        // GET: /Todo/Details/5
+        public async Task<IActionResult> Details(int id)
         {
-            existingTodo.Tags.Add(tag);
+            var todo = await _todoService.GetTodoAsync(id);
+
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            return View(todo);
+        }
+
+        // GET: /Todo/Create
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            await LoadCreateDataAsync();
+
+            return View();
+        }
+
+        // POST: /Todo/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(
+            TodoCreateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                await LoadCreateDataAsync(model.CategoryId);
+                return View(model);
+            }
+
+            await _todoService.CreateTodoAsync(model);
+
+            TempData["SuccessMessage"] =
+                "Todo created successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Todo/Edit/5
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var model = await _todoService.GetTodoForEditAsync(id);
+
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            await LoadEditDataAsync(model.CategoryId);
+
+            return View(model);
+        }
+
+        // POST: /Todo/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            int id,
+            TodoEditViewModel model)
+        {
+            if (id != model.Id)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadEditDataAsync(model.CategoryId);
+                return View(model);
+            }
+
+            var updated = await _todoService.UpdateTodoAsync(model);
+
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            TempData["SuccessMessage"] =
+                "Todo updated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Todo/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _todoService.DeleteTodoAsync(id);
+
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            TempData["SuccessMessage"] =
+                "Todo deleted successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /Todo/ToggleComplete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleComplete(int id)
+        {
+            var updated = await _todoService.ToggleCompleteAsync(id);
+
+            if (!updated)
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Load Categories and Tags for Create/Edit pages
+        private async Task LoadCreateDataAsync(int? selectedCategoryId = null)
+        {
+            ViewBag.Categories = new SelectList(
+                await _context.Categories
+                    .OrderBy(c => c.Name)
+                    .ToListAsync(),
+                "Id",
+                "Name",
+                selectedCategoryId);
+
+            ViewBag.Tags = await _context.Tags
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
+
+        // Load Categories and Tags for Edit page
+        private async Task LoadEditDataAsync(int? selectedCategoryId = null)
+        {
+            ViewBag.Categories = new SelectList(
+                await _context.Categories
+                    .OrderBy(c => c.Name)
+                    .ToListAsync(),
+                "Id",
+                "Name",
+                selectedCategoryId);
+
+            ViewBag.Tags = await _context.Tags
+                .OrderBy(t => t.Name)
+                .ToListAsync();
         }
     }
-
-    await _context.SaveChangesAsync();
-
-    return RedirectToAction(nameof(Index));
-}
-
-    //post todo/delete/3
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var todo = await _context.Todos.FindAsync(id);
-        if (todo == null)
-        {
-            return NotFound();
-        }
-        _context.Todos.Remove(todo);
-        await _context.SaveChangesAsync();
-        return RedirectToAction(nameof(Index));
-}
-//post todo/complete/3
-    [HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Complete(int id)
-{
-    var todo = await _context.Todos.FindAsync(id);
-
-    if (todo == null)
-    {
-        return NotFound();
-    }
-
-    // Toggle completion status
-    todo.IsCompleted = !todo.IsCompleted;
-
-    await _context.SaveChangesAsync();
-
-    return RedirectToAction(nameof(Index));
-}
-
 }

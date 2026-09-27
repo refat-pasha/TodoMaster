@@ -1,14 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using TodoMaster.Data;
+using TodoMaster.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 //Add MVC
 builder.Services.AddControllersWithViews();
 
 //add EF core
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Datasource=todomaster.db"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var app =  builder.Build();
+// Register Todo Service
+builder.Services.AddScoped<ITodoService, TodoService>();
+
+var app = builder.Build();
 
 // middleware config
 
