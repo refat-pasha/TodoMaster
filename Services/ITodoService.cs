@@ -10,7 +10,9 @@ namespace TodoMaster.Services
             string? priorityFilter = null,
             int? categoryFilter = null,
             int? tagFilter = null,
-            string sortOrder = "created_desc");
+            string sortOrder = "created_desc",
+            int page = 1,
+            int pageSize = 10);
 
         Task<TodoEditViewModel?> GetTodoForEditAsync(int id);
 

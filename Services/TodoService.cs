@@ -14,155 +14,199 @@ namespace TodoMaster.Services
             _context = context;
         }
 
-        // GET: /Todo/Index
-        public async Task<TodoIndexViewModel> GetTodosAsync(
-            string? searchTerm = null,
-            string? statusFilter = null,
-            string? priorityFilter = null,
-            int? categoryFilter = null,
-            int? tagFilter = null,
-            string sortOrder = "created_desc")
-        {
-            var query = _context.Todos
-                .Include(t => t.Category)
-                .Include(t => t.Tags)
-                .AsNoTracking()
-                .AsQueryable();
 
-            // Search
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                searchTerm = searchTerm.Trim();
+       // GET: /Todo/Index
+public async Task<TodoIndexViewModel> GetTodosAsync(
+    string? searchTerm = null,
+    string? statusFilter = null,
+    string? priorityFilter = null,
+    int? categoryFilter = null,
+    int? tagFilter = null,
+    string sortOrder = "created_desc",
+    int page = 1,
+    int pageSize = 10)
+{
+    var query = _context.Todos
+        .Include(t => t.Category)
+        .Include(t => t.Tags)
+        .AsNoTracking()
+        .AsQueryable();
 
-                query = query.Where(t =>
-                    t.Title.Contains(searchTerm) ||
-                    (t.Description != null &&
-                     t.Description.Contains(searchTerm)));
-            }
+    // Search
+    if (!string.IsNullOrWhiteSpace(searchTerm))
+    {
+        searchTerm = searchTerm.Trim();
 
-            // Status filter
-            if (statusFilter == "completed")
-            {
-                query = query.Where(t => t.IsCompleted);
-            }
-            else if (statusFilter == "pending")
-            {
-                query = query.Where(t => !t.IsCompleted);
-            }
-            else if (statusFilter == "overdue")
-            {
-                query = query.Where(t =>
-                    !t.IsCompleted &&
-                    t.DueDate.HasValue &&
-                    t.DueDate.Value.Date < DateTime.Today);
-            }
+        query = query.Where(t =>
+            t.Title.Contains(searchTerm) ||
+            (t.Description != null &&
+             t.Description.Contains(searchTerm)));
+    }
 
-            // Priority filter
-            if (!string.IsNullOrWhiteSpace(priorityFilter) &&
-                Enum.TryParse<Priority>(
-                    priorityFilter,
-                    true,
-                    out var parsedPriority))
-            {
-                query = query.Where(t => t.Priority == parsedPriority);
-            }
+    // Status filter
+    if (statusFilter == "completed")
+    {
+        query = query.Where(t => t.IsCompleted);
+    }
+    else if (statusFilter == "pending")
+    {
+        query = query.Where(t => !t.IsCompleted);
+    }
+    else if (statusFilter == "overdue")
+    {
+        query = query.Where(t =>
+            !t.IsCompleted &&
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date < DateTime.Today);
+    }
 
-            // Category filter
-            if (categoryFilter.HasValue)
-            {
-                query = query.Where(t =>
-                    t.CategoryId == categoryFilter.Value);
-            }
+    // Priority filter
+    if (!string.IsNullOrWhiteSpace(priorityFilter) &&
+        Enum.TryParse<Priority>(
+            priorityFilter,
+            true,
+            out var parsedPriority))
+    {
+        query = query.Where(t => t.Priority == parsedPriority);
+    }
 
-            // Tag filter
-            if (tagFilter.HasValue)
-            {
-                query = query.Where(t =>
-                    t.Tags.Any(tag => tag.Id == tagFilter.Value));
-            }
+    // Category filter
+    if (categoryFilter.HasValue)
+    {
+        query = query.Where(t =>
+            t.CategoryId == categoryFilter.Value);
+    }
 
-            // Sorting
-            query = sortOrder switch
-            {
-                "created_asc" =>
-                    query.OrderBy(t => t.CreatedAt),
+    // Tag filter
+    if (tagFilter.HasValue)
+    {
+        query = query.Where(t =>
+            t.Tags.Any(tag =>
+                tag.Id == tagFilter.Value));
+    }
 
-                "title_asc" =>
-                    query.OrderBy(t => t.Title),
+    // Sorting
+    query = sortOrder switch
+    {
+        "created_asc" =>
+            query.OrderBy(t => t.CreatedAt),
 
-                "title_desc" =>
-                    query.OrderByDescending(t => t.Title),
+        "title_asc" =>
+            query.OrderBy(t => t.Title),
 
-                "due_asc" =>
-                    query.OrderBy(t => t.DueDate),
+        "title_desc" =>
+            query.OrderByDescending(t => t.Title),
 
-                "due_desc" =>
-                    query.OrderByDescending(t => t.DueDate),
+        "due_asc" =>
+            query.OrderBy(t => t.DueDate),
 
-                "priority_asc" =>
-                    query.OrderBy(t => t.Priority),
+        "due_desc" =>
+            query.OrderByDescending(t => t.DueDate),
 
-                "priority_desc" =>
-                    query.OrderByDescending(t => t.Priority),
+        "priority_asc" =>
+            query.OrderBy(t => t.Priority),
 
-                _ =>
-                    query.OrderByDescending(t => t.CreatedAt)
-            };
+        "priority_desc" =>
+            query.OrderByDescending(t => t.Priority),
 
-            var todos = await query.ToListAsync();
+        _ =>
+            query.OrderByDescending(t => t.CreatedAt)
+    };
 
-            // Statistics
-            var allTodos = await _context.Todos
-                .AsNoTracking()
-                .ToListAsync();
+    // Statistics
+    var allTodos = await _context.Todos
+        .AsNoTracking()
+        .ToListAsync();
 
-            var todoViewModels = todos.Select(t => new TodoViewModel
-            {
-                Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
-                IsCompleted = t.IsCompleted,
-                CreatedAt = t.CreatedAt,
-                DueDate = t.DueDate,
-                Priority = t.Priority.ToString(),
-                CategoryId = t.CategoryId,
-                CategoryName = t.Category?.Name,
+    // Count filtered todos before pagination
+    var totalFilteredTodos = await query.CountAsync();
 
-                TagNames = t.Tags
-                    .Select(tag => tag.Name)
-                    .ToList(),
+    // Validate page
+    if (page < 1)
+    {
+        page = 1;
+    }
 
-                SelectedTagIds = t.Tags
-                    .Select(tag => tag.Id)
-                    .ToList()
-            }).ToList();
+    if (pageSize < 1)
+    {
+        pageSize = 10;
+    }
 
-            return new TodoIndexViewModel
-            {
-                SearchTerm = searchTerm,
-                StatusFilter = statusFilter,
-                PriorityFilter = priorityFilter,
-                CategoryFilter = categoryFilter,
-                TagFilter = tagFilter,
-                SortOrder = sortOrder,
+    var totalPages =
+        (int)Math.Ceiling(
+            totalFilteredTodos /
+            (double)pageSize);
 
-                TotalTodos = allTodos.Count,
+    if (totalPages > 0 && page > totalPages)
+    {
+        page = totalPages;
+    }
 
-                CompletedTodos =
-                    allTodos.Count(t => t.IsCompleted),
+    // Pagination
+    var todos = await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
 
-                PendingTodos =
-                    allTodos.Count(t => !t.IsCompleted),
+    var todoViewModels = todos.Select(t => new TodoViewModel
+    {
+        Id = t.Id,
+        Title = t.Title,
+        Description = t.Description,
+        IsCompleted = t.IsCompleted,
+        CreatedAt = t.CreatedAt,
+        DueDate = t.DueDate,
+        Priority = t.Priority.ToString(),
+        CategoryId = t.CategoryId,
+        CategoryName = t.Category?.Name,
 
-                OverdueTodos =
-                    allTodos.Count(t =>
-                        !t.IsCompleted &&
-                        t.DueDate.HasValue &&
-                        t.DueDate.Value.Date < DateTime.Today),
+        TagNames = t.Tags
+            .Select(tag => tag.Name)
+            .ToList(),
 
-                Todos = todoViewModels
-            };
-        }
+        SelectedTagIds = t.Tags
+            .Select(tag => tag.Id)
+            .ToList()
+
+    }).ToList();
+
+    return new TodoIndexViewModel
+    {
+        SearchTerm = searchTerm,
+
+        StatusFilter = statusFilter,
+
+        PriorityFilter = priorityFilter,
+
+        CategoryFilter = categoryFilter,
+
+        TagFilter = tagFilter,
+
+        SortOrder = sortOrder,
+
+        TotalTodos = allTodos.Count,
+
+        CompletedTodos =
+            allTodos.Count(t => t.IsCompleted),
+
+        PendingTodos =
+            allTodos.Count(t => !t.IsCompleted),
+
+        OverdueTodos =
+            allTodos.Count(t =>
+                !t.IsCompleted &&
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date < DateTime.Today),
+
+        Todos = todoViewModels,
+
+        CurrentPage = page,
+
+        PageSize = pageSize,
+
+        TotalPages = totalPages
+    };
+}
 
         // GET: /Todo/Details/5
         public async Task<TodoViewModel?> GetTodoAsync(int id)

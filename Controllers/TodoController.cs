@@ -20,33 +20,48 @@ namespace TodoMaster.Controllers
             _context = context;
         }
 
-        // GET: /Todo
-        public async Task<IActionResult> Index(
-            string? search,
-            string? status,
-            Priority? priority,
-            int? categoryId,
-            int? tagId,
-            string? sort)
-        {
-            var model = await _todoService.GetTodosAsync(
-                searchTerm: search,
-                statusFilter: status,
-                priorityFilter: priority?.ToString(),
-                categoryFilter: categoryId,
-                tagFilter: tagId,
-                sortOrder: sort ?? "created_desc");
+        
 
-            ViewBag.Categories = await _context.Categories
-                .OrderBy(c => c.Name)
-                .ToListAsync();
+       
+       // GET: /Todo
+public async Task<IActionResult> Index(
+    string? search,
+    string? status,
+    Priority? priority,
+    int? categoryId,
+    int? tagId,
+    string? sort,
+    int page = 1,
+    int pageSize = 10)
+{
+    if (pageSize != 5 &&
+        pageSize != 10 &&
+        pageSize != 20 &&
+        pageSize != 50)
+    {
+        pageSize = 10;
+    }
 
-            ViewBag.Tags = await _context.Tags
-                .OrderBy(t => t.Name)
-                .ToListAsync();
+    var model = await _todoService.GetTodosAsync(
+        searchTerm: search,
+        statusFilter: status,
+        priorityFilter: priority?.ToString(),
+        categoryFilter: categoryId,
+        tagFilter: tagId,
+        sortOrder: sort ?? "created_desc",
+        page: page,
+        pageSize: pageSize);
 
-            return View(model);
-        }
+    ViewBag.Categories = await _context.Categories
+        .OrderBy(c => c.Name)
+        .ToListAsync();
+
+    ViewBag.Tags = await _context.Tags
+        .OrderBy(t => t.Name)
+        .ToListAsync();
+
+    return View(model);
+}
 
         // GET: /Todo/Details/5
         public async Task<IActionResult> Details(int id)
