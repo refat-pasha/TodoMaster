@@ -171,36 +171,28 @@ public async Task<IActionResult> Index(
             return RedirectToAction(nameof(Index));
         }
 
-        // Load Categories and Tags for Create/Edit pages
-        private async Task LoadCreateDataAsync(int? selectedCategoryId = null)
-        {
-            ViewBag.Categories = new SelectList(
-                await _context.Categories
-                    .OrderBy(c => c.Name)
-                    .ToListAsync(),
-                "Id",
-                "Name",
-                selectedCategoryId);
+        // Load Categories and Tags for Create page
+private async Task LoadCreateDataAsync(int? selectedCategoryId = null)
+{
+    ViewBag.Categories = await _context.Categories
+        .OrderBy(c => c.Name)
+        .ToListAsync();
 
-            ViewBag.Tags = await _context.Tags
-                .OrderBy(t => t.Name)
-                .ToListAsync();
-        }
+    ViewBag.Tags = await _context.Tags
+        .OrderBy(t => t.Name)
+        .ToListAsync();
+}
 
-        // Load Categories and Tags for Edit page
-        private async Task LoadEditDataAsync(int? selectedCategoryId = null)
-        {
-            ViewBag.Categories = new SelectList(
-                await _context.Categories
-                    .OrderBy(c => c.Name)
-                    .ToListAsync(),
-                "Id",
-                "Name",
-                selectedCategoryId);
+// Load Categories and Tags for Edit page
+private async Task LoadEditDataAsync(int? selectedCategoryId = null)
+{
+    ViewBag.Categories = await _context.Categories
+        .OrderBy(c => c.Name)
+        .ToListAsync();
 
-            ViewBag.Tags = await _context.Tags
-                .OrderBy(t => t.Name)
-                .ToListAsync();
-        }
+    ViewBag.Tags = await _context.Tags
+        .OrderBy(t => t.Name)
+        .ToListAsync();
+}
     }
 }

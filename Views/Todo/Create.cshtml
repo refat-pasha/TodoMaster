@@ -1,123 +1,238 @@
-
-@model TodoMaster.Models.Todo
-@using Microsoft.AspNetCore.Mvc.Rendering
+@model TodoMaster.ViewModels.TodoCreateViewModel
 
 @{
     ViewData["Title"] = "Create Todo";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
 
-    <h1>Create Todo</h1>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
 
-    <form asp-action="Create" method="post">
+            <div class="card shadow-sm">
 
-        <div asp-validation-summary="ModelOnly"
-             class="text-danger">
+                <div class="card-header">
+                    <h4 class="mb-0">Create Todo</h4>
+                </div>
+
+                <div class="card-body">
+
+                    <form asp-action="Create" method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <!-- Title -->
+                        <div class="mb-3">
+
+                            <label asp-for="Title"
+                                   class="form-label">
+                                Title
+                            </label>
+
+                            <input asp-for="Title"
+                                   class="form-control"
+                                   placeholder="Enter todo title" />
+
+                            <span asp-validation-for="Title"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+
+                            <label asp-for="Description"
+                                   class="form-label">
+                                Description
+                            </label>
+
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Enter description (optional)">
+                            </textarea>
+
+                            <span asp-validation-for="Description"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <div class="row">
+
+                            <!-- Priority -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Priority"
+                                       class="form-label">
+                                    Priority
+                                </label>
+
+                                <select asp-for="Priority"
+                                        class="form-select">
+
+                                    @foreach (var priority in
+                                        Enum.GetValues<TodoMaster.Models.Priority>())
+                                    {
+                                        <option value="@priority">
+                                            @priority
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="Priority"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="CategoryId"
+                                       class="form-label">
+                                    Category
+                                </label>
+
+                                <select asp-for="CategoryId"
+                                        class="form-select">
+
+                                    <option value="">
+                                        -- No Category --
+                                    </option>
+
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        foreach (var category in ViewBag.Categories)
+                                        {
+                                            <option value="@category.Id">
+                                                @category.Name
+                                            </option>
+                                        }
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="CategoryId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Due Date -->
+                        <div class="mb-3">
+
+                            <label asp-for="DueDate"
+                                   class="form-label">
+                                Due Date
+                            </label>
+
+                            <input asp-for="DueDate"
+                                   type="date"
+                                   class="form-control" />
+
+                            <span asp-validation-for="DueDate"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-4">
+
+                            <label class="form-label">
+                                Tags
+                            </label>
+
+                            @if (ViewBag.Tags != null &&
+                                 ViewBag.Tags.Count > 0)
+                            {
+                                <div class="border rounded p-3">
+
+                                    <div class="row">
+
+                                        @foreach (var tag in ViewBag.Tags)
+                                        {
+                                            <div class="col-md-4 mb-2">
+
+                                                <div class="form-check">
+
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           name="SelectedTagIds"
+                                                           value="@tag.Id"
+                                                           id="tag_@tag.Id" />
+
+                                                    <label class="form-check-label"
+                                                           for="tag_@tag.Id">
+
+                                                        @tag.Name
+
+                                                    </label>
+
+                                                </div>
+
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-light border">
+                                    No tags available.
+                                    Create tags first if you want to
+                                    assign them to this todo.
+                                </div>
+                            }
+
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-arrow-left"></i>
+                                Back
+
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-plus-lg"></i>
+                                Create Todo
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
         </div>
+    </div>
 
-        <div class="mb-3">
-
-            <label asp-for="Title"
-                   class="form-label">
-                Title
-            </label>
-
-            <input asp-for="Title"
-                   class="form-control"
-                   placeholder="What do you need to do?" />
-
-            <span asp-validation-for="Title"
-                  class="text-danger">
-            </span>
-
-        </div>
-
-        <div class="mb-3">
-
-            <label asp-for="Description"
-                   class="form-label">
-                Description
-            </label>
-
-            <textarea asp-for="Description"
-                      class="form-control"
-                      rows="4"
-                      placeholder="Add some details...">
-            </textarea>
-
-            <span asp-validation-for="Description"
-                  class="text-danger">
-            </span>
-
-        </div>
-
-        <div class="mb-3">
-
-            <label asp-for="Priority"
-                   class="form-label">
-                Priority
-            </label>
-
-            <select asp-for="Priority"
-                    class="form-select"
-                    asp-items="Html.GetEnumSelectList<TodoMaster.Models.Priority>()">
-            </select>
-
-        </div>
-
-        <div class="mb-3">
-    <label asp-for="CategoryId" class="form-label fw-semibold">
-        Category
-    </label>
-
-    <select asp-for="CategoryId"
-            class="form-select"
-            asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
-        <option value="">-- No Category --</option>
-    </select>
-
-    <span asp-validation-for="CategoryId"
-          class="text-danger">
-    </span>
 </div>
 
-
-        <div class="mb-3">
-
-            <label asp-for="DueDate"
-                   class="form-label">
-                Due Date
-            </label>
-
-            <input asp-for="DueDate"
-                   type="date"
-                   class="form-control" />
-
-        </div>
-
-        <button type="submit"
-                class="btn btn-primary">
-
-            Create Todo
-
-        </button>
-
-        <a asp-action="Index"
-           class="btn btn-secondary">
-
-            Cancel
-
-        </a>
-
-    </form>
-
-</div>
-
-@section Scripts
-{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-
