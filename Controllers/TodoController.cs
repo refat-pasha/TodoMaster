@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TodoMaster.Data;
 using TodoMaster.Models;
@@ -21,33 +20,33 @@ namespace TodoMaster.Controllers
             _context = context;
         }
 
-       // GET: /Todo
-public async Task<IActionResult> Index(
-    string? search,
-    string? status,
-    Priority? priority,
-    int? categoryId,
-    int? tagId,
-    string? sort)
-{
-    var model = await _todoService.GetTodosAsync(
-        searchTerm: search,
-        statusFilter: status,
-        priorityFilter: priority?.ToString(),
-        categoryFilter: categoryId,
-        tagFilter: tagId,
-        sortOrder: sort ?? "created_desc");
+        // GET: /Todo
+        public async Task<IActionResult> Index(
+            string? search,
+            string? status,
+            Priority? priority,
+            int? categoryId,
+            int? tagId,
+            string? sort)
+        {
+            var model = await _todoService.GetTodosAsync(
+                searchTerm: search,
+                statusFilter: status,
+                priorityFilter: priority?.ToString(),
+                categoryFilter: categoryId,
+                tagFilter: tagId,
+                sortOrder: sort ?? "created_desc");
 
-    ViewBag.Categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .ToListAsync();
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
-    ViewBag.Tags = await _context.Tags
-        .OrderBy(t => t.Name)
-        .ToListAsync();
+            ViewBag.Tags = await _context.Tags
+                .OrderBy(t => t.Name)
+                .ToListAsync();
 
-    return View(model);
-}
+            return View(model);
+        }
 
         // GET: /Todo/Details/5
         public async Task<IActionResult> Details(int id)
@@ -80,6 +79,7 @@ public async Task<IActionResult> Index(
             if (!ModelState.IsValid)
             {
                 await LoadCreateDataAsync(model.CategoryId);
+
                 return View(model);
             }
 
@@ -122,6 +122,7 @@ public async Task<IActionResult> Index(
             if (!ModelState.IsValid)
             {
                 await LoadEditDataAsync(model.CategoryId);
+
                 return View(model);
             }
 
@@ -136,6 +137,20 @@ public async Task<IActionResult> Index(
                 "Todo updated successfully.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Todo/Delete/5
+        [HttpGet]
+        public async Task<IActionResult> DeleteConfirmation(int id)
+        {
+            var todo = await _todoService.GetTodoAsync(id);
+
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            return View("Delete", todo);
         }
 
         // POST: /Todo/Delete/5
@@ -161,7 +176,8 @@ public async Task<IActionResult> Index(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleComplete(int id)
         {
-            var updated = await _todoService.ToggleCompleteAsync(id);
+            var updated =
+                await _todoService.ToggleCompleteAsync(id);
 
             if (!updated)
             {
@@ -172,27 +188,29 @@ public async Task<IActionResult> Index(
         }
 
         // Load Categories and Tags for Create page
-private async Task LoadCreateDataAsync(int? selectedCategoryId = null)
-{
-    ViewBag.Categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .ToListAsync();
+        private async Task LoadCreateDataAsync(
+            int? selectedCategoryId = null)
+        {
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
-    ViewBag.Tags = await _context.Tags
-        .OrderBy(t => t.Name)
-        .ToListAsync();
-}
+            ViewBag.Tags = await _context.Tags
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
 
-// Load Categories and Tags for Edit page
-private async Task LoadEditDataAsync(int? selectedCategoryId = null)
-{
-    ViewBag.Categories = await _context.Categories
-        .OrderBy(c => c.Name)
-        .ToListAsync();
+        // Load Categories and Tags for Edit page
+        private async Task LoadEditDataAsync(
+            int? selectedCategoryId = null)
+        {
+            ViewBag.Categories = await _context.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
-    ViewBag.Tags = await _context.Tags
-        .OrderBy(t => t.Name)
-        .ToListAsync();
-}
+            ViewBag.Tags = await _context.Tags
+                .OrderBy(t => t.Name)
+                .ToListAsync();
+        }
     }
 }
