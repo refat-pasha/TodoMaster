@@ -4,109 +4,109 @@
     ViewData["Title"] = "Todo List";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccessMessage"]
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Close">
-        </button>
-    </div>
-}
-
 <div class="container mt-4">
-
-<div class="container py-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">My Todos</h1>
-            <p class="text-muted mb-0">
-                Manage your tasks and stay organized.
-            </p>
-        </div>
-
-        <a asp-action="Create" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i>
-            Add Todo
-        </a>
-    </div>
 
     <!-- Success Message -->
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             @TempData["SuccessMessage"]
+
             <button type="button"
                     class="btn-close"
-                    data-bs-dismiss="alert">
+                    data-bs-dismiss="alert"
+                    aria-label="Close">
             </button>
         </div>
     }
 
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2>My Todos</h2>
+            <p class="text-muted mb-0">
+                Manage your tasks, categories, priorities, and tags.
+            </p>
+        </div>
+
+        <a asp-action="Create"
+           class="btn btn-primary">
+            + Create Todo
+        </a>
+
+    </div>
+
     <!-- Statistics -->
     <div class="row g-3 mb-4">
 
+        <!-- Total -->
         <div class="col-md-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted small">Total Todos</div>
-                    <div class="fs-3 fw-bold">
+                    <h6 class="text-muted">Total Todos</h6>
+
+                    <h3 class="mb-0">
                         @Model.TotalTodos
-                    </div>
+                    </h3>
                 </div>
             </div>
         </div>
 
+        <!-- Completed -->
         <div class="col-md-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted small">Completed</div>
-                    <div class="fs-3 fw-bold text-success">
+                    <h6 class="text-muted">Completed</h6>
+
+                    <h3 class="mb-0 text-success">
                         @Model.CompletedTodos
-                    </div>
+                    </h3>
                 </div>
             </div>
         </div>
 
+        <!-- Pending -->
         <div class="col-md-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted small">Pending</div>
-                    <div class="fs-3 fw-bold text-warning">
+                    <h6 class="text-muted">Pending</h6>
+
+                    <h3 class="mb-0 text-warning">
                         @Model.PendingTodos
-                    </div>
+                    </h3>
                 </div>
             </div>
         </div>
 
+        <!-- Overdue -->
         <div class="col-md-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="text-muted small">Overdue</div>
-                    <div class="fs-3 fw-bold text-danger">
+                    <h6 class="text-muted">Overdue</h6>
+
+                    <h3 class="mb-0 text-danger">
                         @Model.OverdueTodos
-                    </div>
+                    </h3>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Search & Filters -->
+    <!-- Filters -->
     <div class="card shadow-sm mb-4">
+
         <div class="card-body">
 
-            <form asp-action="Index" method="get">
+            <form asp-action="Index"
+                  method="get">
 
                 <div class="row g-3">
 
                     <!-- Search -->
                     <div class="col-md-4">
+
                         <label class="form-label">
                             Search
                         </label>
@@ -115,11 +115,13 @@
                                name="search"
                                value="@Model.SearchTerm"
                                class="form-control"
-                               placeholder="Search todos..." />
+                               placeholder="Search title or description..." />
+
                     </div>
 
                     <!-- Status -->
                     <div class="col-md-2">
+
                         <label class="form-label">
                             Status
                         </label>
@@ -127,7 +129,10 @@
                         <select name="status"
                                 class="form-select">
 
-                            <option value="">All</option>
+                            <option value=""
+                                    selected="@(string.IsNullOrEmpty(Model.StatusFilter))">
+                                All
+                            </option>
 
                             <option value="pending"
                                     selected="@(Model.StatusFilter == "pending")">
@@ -145,10 +150,12 @@
                             </option>
 
                         </select>
+
                     </div>
 
                     <!-- Priority -->
                     <div class="col-md-2">
+
                         <label class="form-label">
                             Priority
                         </label>
@@ -156,9 +163,12 @@
                         <select name="priority"
                                 class="form-select">
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
-                            @foreach (var priority in Enum.GetValues<TodoMaster.Models.Priority>())
+                            @foreach (var priority in
+                                Enum.GetValues<TodoMaster.Models.Priority>())
                             {
                                 <option value="@priority"
                                         selected="@(Model.PriorityFilter == priority.ToString())">
@@ -167,10 +177,12 @@
                             }
 
                         </select>
+
                     </div>
 
                     <!-- Category -->
                     <div class="col-md-2">
+
                         <label class="form-label">
                             Category
                         </label>
@@ -178,26 +190,53 @@
                         <select name="categoryId"
                                 class="form-select">
 
-                            <option value="">All</option>
+                            <option value="">
+                                All
+                            </option>
 
-                            @if (ViewBag.Categories != null)
-{
-    foreach (var category in ViewBag.Categories)
-    {
-        <option value="@category.Id"
-                selected="@(Model.CategoryFilter == category.Id)">
-            @category.Name
-        </option>
-    }
-}
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.Id"
+                                        selected="@(Model.CategoryFilter == category.Id)">
+                                    @category.Name
+                                </option>
+                            }
 
                         </select>
+
+                    </div>
+
+                    <!-- Tag -->
+                    <div class="col-md-2">
+
+                        <label class="form-label">
+                            Tag
+                        </label>
+
+                        <select name="tagId"
+                                class="form-select">
+
+                            <option value="">
+                                All
+                            </option>
+
+                            @foreach (var tag in ViewBag.Tags)
+                            {
+                                <option value="@tag.Id"
+                                        selected="@(Model.TagFilter == tag.Id)">
+                                    @tag.Name
+                                </option>
+                            }
+
+                        </select>
+
                     </div>
 
                     <!-- Sort -->
-                    <div class="col-md-2">
+                    <div class="col-md-3">
+
                         <label class="form-label">
-                            Sort
+                            Sort By
                         </label>
 
                         <select name="sort"
@@ -205,12 +244,12 @@
 
                             <option value="created_desc"
                                     selected="@(Model.SortOrder == "created_desc")">
-                                Newest
+                                Newest First
                             </option>
 
                             <option value="created_asc"
                                     selected="@(Model.SortOrder == "created_asc")">
-                                Oldest
+                                Oldest First
                             </option>
 
                             <option value="title_asc"
@@ -235,64 +274,45 @@
 
                             <option value="priority_asc"
                                     selected="@(Model.SortOrder == "priority_asc")">
-                                Priority ↑
+                                Priority Low-High
                             </option>
 
                             <option value="priority_desc"
                                     selected="@(Model.SortOrder == "priority_desc")">
-                                Priority ↓
+                                Priority High-Low
                             </option>
 
                         </select>
+
                     </div>
 
-                </div>
+                    <!-- Filter Buttons -->
+                    <div class="col-md-9 d-flex align-items-end gap-2">
 
-                <div class="mt-3 d-flex gap-2">
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Apply Filters
+                        </button>
 
-                    <button type="submit"
-                            class="btn btn-primary">
-                        <i class="bi bi-search"></i>
-                        Filter
-                    </button>
+                        <a asp-action="Index"
+                           class="btn btn-secondary">
+                            Clear Filters
+                        </a>
 
-                    <a asp-action="Index"
-                       class="btn btn-outline-secondary">
-                        Clear
-                    </a>
+                    </div>
 
                 </div>
 
             </form>
 
         </div>
+
     </div>
 
     <!-- Todo List -->
-    @if (Model.Todos == null || !Model.Todos.Any())
-    {
-        <div class="card shadow-sm">
-            <div class="card-body text-center py-5">
 
-                <i class="bi bi-check2-square fs-1 text-muted"></i>
-
-                <h4 class="mt-3">
-                    No todos found
-                </h4>
-
-                <p class="text-muted">
-                    Create a new todo to get started.
-                </p>
-
-                <a asp-action="Create"
-                   class="btn btn-primary">
-                    Create Todo
-                </a>
-
-            </div>
-        </div>
-    }
-    else
+    @if (Model.Todos != null &&
+         Model.Todos.Count > 0)
     {
         <div class="row g-3">
 
@@ -300,17 +320,32 @@
             {
                 <div class="col-12">
 
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm
+                        @(todo.IsCompleted ? "border-success" : "")">
 
                         <div class="card-body">
 
-                            <div class="d-flex justify-content-between align-items-start">
+                            <div class="row align-items-center">
 
                                 <!-- Todo Information -->
-                                <div class="flex-grow-1">
+                                <div class="col-md-7">
 
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
 
+                                        @if (todo.IsCompleted)
+                                        {
+                                            <h5 class="mb-0 text-decoration-line-through text-muted">
+                                                @todo.Title
+                                            </h5>
+                                        }
+                                        else
+                                        {
+                                            <h5 class="mb-0">
+                                                @todo.Title
+                                            </h5>
+                                        }
+
+                                        <!-- Status -->
                                         @if (todo.IsCompleted)
                                         {
                                             <span class="badge bg-success">
@@ -324,26 +359,9 @@
                                             </span>
                                         }
 
-                                        <span class="badge bg-secondary">
-                                            @todo.Priority
-                                        </span>
-
-                                        @if (!string.IsNullOrWhiteSpace(todo.CategoryName))
-                                        {
-                                            <span class="badge bg-info text-dark">
-                                                @todo.CategoryName
-                                            </span>
-                                        }
-
                                     </div>
 
-                                    <h5 class="mt-2 mb-1
-                                        @(todo.IsCompleted ? "text-decoration-line-through text-muted" : "")">
-
-                                        @todo.Title
-
-                                    </h5>
-
+                                    <!-- Description -->
                                     @if (!string.IsNullOrWhiteSpace(todo.Description))
                                     {
                                         <p class="text-muted mb-2">
@@ -351,103 +369,148 @@
                                         </p>
                                     }
 
-                                    <div class="small text-muted">
-
-                                        <span>
-                                            Created:
-                                            @todo.CreatedAt.ToString("dd MMM yyyy")
+                                    <!-- Category -->
+                                    @if (!string.IsNullOrWhiteSpace(todo.CategoryName))
+                                    {
+                                        <span class="badge bg-primary me-1">
+                                            @todo.CategoryName
                                         </span>
+                                    }
 
-                                        @if (todo.DueDate.HasValue)
+                                    <!-- Tags -->
+                                    @if (todo.TagNames != null &&
+                                         todo.TagNames.Count > 0)
+                                    {
+                                        @foreach (var tag in todo.TagNames)
                                         {
-                                            <span class="ms-3">
-                                                Due:
-                                                @todo.DueDate.Value.ToString("dd MMM yyyy")
+                                            <span class="badge bg-secondary me-1">
+                                                #@tag
+                                            </span>
+                                        }
+                                    }
+
+                                </div>
+
+                                <!-- Todo Metadata -->
+                                <div class="col-md-2">
+
+                                    <!-- Priority -->
+                                    <div class="mb-2">
+
+                                        <small class="text-muted d-block">
+                                            Priority
+                                        </small>
+
+                                        @if (todo.Priority == "High")
+                                        {
+                                            <span class="badge bg-danger">
+                                                High
+                                            </span>
+                                        }
+                                        else if (todo.Priority == "Medium")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                Medium
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark">
+                                                Low
                                             </span>
                                         }
 
                                     </div>
 
-                                    <!-- Tags -->
-                                    @if (todo.TagNames != null &&
-                                         todo.TagNames.Any())
-                                    {
-                                        <div class="mt-2">
+                                    <!-- Due Date -->
+                                    <div>
 
-                                            @foreach (var tag in todo.TagNames)
+                                        <small class="text-muted d-block">
+                                            Due Date
+                                        </small>
+
+                                        @if (todo.DueDate.HasValue)
+                                        {
+                                            var isOverdue =
+                                                !todo.IsCompleted &&
+                                                todo.DueDate.Value.Date < DateTime.Today;
+
+                                            if (isOverdue)
                                             {
-                                                <span class="badge bg-light text-dark border me-1">
-                                                    #@tag
+                                                <span class="text-danger">
+                                                    @todo.DueDate.Value.ToString("dd MMM yyyy")
                                                 </span>
                                             }
+                                            else
+                                            {
+                                                <span>
+                                                    @todo.DueDate.Value.ToString("dd MMM yyyy")
+                                                </span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                No due date
+                                            </span>
+                                        }
 
-                                        </div>
-                                    }
+                                    </div>
 
                                 </div>
 
                                 <!-- Actions -->
-                                <div class="d-flex gap-2 ms-3">
+                                <div class="col-md-3">
 
-                                    <!-- Toggle Complete -->
-                                    <form asp-action="ToggleComplete"
-                                          asp-route-id="@todo.Id"
-                                          method="post">
+                                    <div class="d-flex flex-wrap gap-2 justify-content-md-end">
 
-                                        @Html.AntiForgeryToken()
+                                        <!-- Toggle Complete -->
+                                        <form asp-action="ToggleComplete"
+                                              asp-route-id="@todo.Id"
+                                              method="post"
+                                              class="d-inline">
 
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Toggle Complete">
+                                            @Html.AntiForgeryToken()
 
                                             @if (todo.IsCompleted)
                                             {
-                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-warning">
+                                                    Mark Pending
+                                                </button>
                                             }
                                             else
                                             {
-                                                <i class="bi bi-check-lg"></i>
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-success">
+                                                    Complete
+                                                </button>
                                             }
 
-                                        </button>
+                                        </form>
 
-                                    </form>
+                                        <!-- Details -->
+                                        <a asp-action="Details"
+                                           asp-route-id="@todo.Id"
+                                           class="btn btn-sm btn-info">
+                                            Details
+                                        </a>
 
-                                    <!-- Details -->
-                                    <a asp-action="Details"
-                                       asp-route-id="@todo.Id"
-                                       class="btn btn-sm btn-outline-info"
-                                       title="Details">
+                                        <!-- Edit -->
+                                        <a asp-action="Edit"
+                                           asp-route-id="@todo.Id"
+                                           class="btn btn-sm btn-primary">
+                                            Edit
+                                        </a>
 
-                                        <i class="bi bi-eye"></i>
-
-                                    </a>
-
-                                    <!-- Edit -->
-                                    <a asp-action="Edit"
-                                       asp-route-id="@todo.Id"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Edit">
-
-                                        <i class="bi bi-pencil"></i>
-
-                                    </a>
-
-                                    <!-- Delete -->
-                                    <form asp-action="Delete"
-                                          asp-route-id="@todo.Id"
-                                          method="post"
-                                          onsubmit="return confirm('Are you sure you want to delete this todo?');">
-
-                                        @Html.AntiForgeryToken()
-
+                                        <!-- Delete -->
                                         <a asp-action="DeleteConfirmation"
-   asp-route-id="@todo.Id"
-   class="btn btn-sm btn-danger">
-    Delete
-</a>
+                                           asp-route-id="@todo.Id"
+                                           class="btn btn-sm btn-danger">
+                                            Delete
+                                        </a>
 
-                                    </form>
+                                    </div>
 
                                 </div>
 
@@ -459,6 +522,31 @@
 
                 </div>
             }
+
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <h4>
+                    No Todos Found
+                </h4>
+
+                <p class="text-muted">
+                    There are no todos matching your current filters.
+                </p>
+
+                <a asp-action="Create"
+                   class="btn btn-primary">
+                    Create Your First Todo
+                </a>
+
+            </div>
 
         </div>
     }

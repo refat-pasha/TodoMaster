@@ -1,17 +1,18 @@
 @model TodoMaster.ViewModels.TodoViewModel
 
 @{
-    ViewData["Title"] = "Delete Todo";
+    ViewData["Title"] = "Todo Details";
 }
 
 <div class="container mt-4">
 
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-            <h2>Delete Todo</h2>
+            <h2>Todo Details</h2>
             <p class="text-muted mb-0">
-                Confirm that you want to delete this todo.
+                View the complete information of this todo.
             </p>
         </div>
 
@@ -22,38 +23,47 @@
 
     </div>
 
-    <div class="card shadow-sm border-danger">
-
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">
-                Confirm Deletion
-            </h5>
-        </div>
+    <!-- Todo Details -->
+    <div class="card shadow-sm">
 
         <div class="card-body">
 
-            <div class="alert alert-warning">
-                <strong>Warning!</strong>
-                This action cannot be undone.
+            <!-- Title and Status -->
+            <div class="mb-4">
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <h3 class="mb-0">
+                        @Model.Title
+                    </h3>
+
+                    @if (Model.IsCompleted)
+                    {
+                        <span class="badge bg-success">
+                            Completed
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            Pending
+                        </span>
+                    }
+
+                </div>
+
             </div>
 
-            <!-- Todo Title -->
-            <div class="mb-3">
-                <strong>Title</strong>
-
-                <p class="mb-0">
-                    @Model.Title
-                </p>
-            </div>
+            <hr />
 
             <!-- Description -->
-            <div class="mb-3">
+            <div class="mb-4">
 
-                <strong>Description</strong>
+                <h5>Description</h5>
 
                 @if (string.IsNullOrWhiteSpace(Model.Description))
                 {
-                    <p class="text-muted mb-0">
+                    <p class="text-muted">
                         No description provided.
                     </p>
                 }
@@ -66,51 +76,117 @@
 
             </div>
 
-            <!-- Priority -->
-            <div class="mb-3">
+            <!-- Information -->
+            <div class="row mb-4">
 
-                <strong>Priority</strong>
+                <!-- Priority -->
+                <div class="col-md-4 mb-3">
 
-                <p class="mb-0">
-                    @Model.Priority
-                </p>
+                    <strong>Priority</strong>
 
-            </div>
+                    <div class="mt-2">
 
-            <!-- Category -->
-            <div class="mb-3">
+                        @if (Model.Priority == "High")
+                        {
+                            <span class="badge bg-danger">
+                                High
+                            </span>
+                        }
+                        else if (Model.Priority == "Medium")
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Medium
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-dark">
+                                Low
+                            </span>
+                        }
 
-                <strong>Category</strong>
+                    </div>
 
-                @if (string.IsNullOrWhiteSpace(Model.CategoryName))
-                {
-                    <p class="text-muted mb-0">
-                        No Category
-                    </p>
-                }
-                else
-                {
-                    <p class="mb-0">
-                        @Model.CategoryName
-                    </p>
-                }
+                </div>
+
+                <!-- Category -->
+                <div class="col-md-4 mb-3">
+
+                    <strong>Category</strong>
+
+                    <div class="mt-2">
+
+                        @if (string.IsNullOrWhiteSpace(Model.CategoryName))
+                        {
+                            <span class="text-muted">
+                                No Category
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary">
+                                @Model.CategoryName
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+                <!-- Due Date -->
+                <div class="col-md-4 mb-3">
+
+                    <strong>Due Date</strong>
+
+                    <div class="mt-2">
+
+                        @if (Model.DueDate.HasValue)
+                        {
+                            var isOverdue =
+                                !Model.IsCompleted &&
+                                Model.DueDate.Value.Date < DateTime.Today;
+
+                            if (isOverdue)
+                            {
+                                <span class="text-danger fw-bold">
+                                    @Model.DueDate.Value.ToString("dd MMM yyyy")
+                                    (Overdue)
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                    @Model.DueDate.Value.ToString("dd MMM yyyy")
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                No due date
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
 
             </div>
 
             <!-- Tags -->
             <div class="mb-4">
 
-                <strong>Tags</strong>
+                <h5>Tags</h5>
 
                 @if (Model.TagNames != null &&
                      Model.TagNames.Count > 0)
                 {
-                    <div class="d-flex flex-wrap gap-2 mt-2">
+                    <div class="d-flex flex-wrap gap-2">
 
                         @foreach (var tag in Model.TagNames)
                         {
                             <span class="badge bg-secondary">
-                                @tag
+                                #@tag
                             </span>
                         }
 
@@ -118,33 +194,75 @@
                 }
                 else
                 {
-                    <p class="text-muted mb-0">
+                    <p class="text-muted">
                         No tags assigned.
                     </p>
                 }
 
             </div>
 
+            <!-- Created Date -->
+            <div class="mb-4">
+
+                <strong>Created At</strong>
+
+                <p class="text-muted mb-0">
+                    @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                </p>
+
+            </div>
+
             <hr />
 
-            <!-- Delete Form -->
-            <form asp-action="Delete"
-                  asp-route-id="@Model.Id"
-                  method="post">
+            <!-- Actions -->
+            <div class="d-flex flex-wrap gap-2">
 
-                @Html.AntiForgeryToken()
-
-                <button type="submit"
-                        class="btn btn-danger">
-                    Yes, Delete Todo
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-                    Cancel
+                <!-- Edit -->
+                <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-primary">
+                    Edit
                 </a>
 
-            </form>
+                <!-- Toggle Complete -->
+                <form asp-action="ToggleComplete"
+                      asp-route-id="@Model.Id"
+                      method="post"
+                      class="d-inline">
+
+                    @Html.AntiForgeryToken()
+
+                    @if (Model.IsCompleted)
+                    {
+                        <button type="submit"
+                                class="btn btn-warning">
+                            Mark as Pending
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit"
+                                class="btn btn-success">
+                            Mark as Completed
+                        </button>
+                    }
+
+                </form>
+
+                <!-- Delete -->
+                <a asp-action="DeleteConfirmation"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-danger">
+                    Delete
+                </a>
+
+                <!-- Back -->
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Back to List
+                </a>
+
+            </div>
 
         </div>
 
