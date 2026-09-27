@@ -25,6 +25,7 @@ namespace TodoMaster.Services
         {
             var query = _context.Todos
                 .Include(t => t.Category)
+                .Include(t => t.Tags)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -73,9 +74,12 @@ namespace TodoMaster.Services
                     t.CategoryId == categoryFilter.Value);
             }
 
-            // Tag filtering is temporarily skipped here because
-            // the current Todo model does not expose a TodoTags
-            // navigation property.
+            // Tag filter
+            if (tagFilter.HasValue)
+            {
+                query = query.Where(t =>
+                    t.Tags.Any(tag => tag.Id == tagFilter.Value));
+            }
 
             // Sorting
             query = sortOrder switch
@@ -120,15 +124,17 @@ namespace TodoMaster.Services
                 IsCompleted = t.IsCompleted,
                 CreatedAt = t.CreatedAt,
                 DueDate = t.DueDate,
-
-                // Convert enum to string for the ViewModel
                 Priority = t.Priority.ToString(),
-
                 CategoryId = t.CategoryId,
                 CategoryName = t.Category?.Name,
 
-                TagNames = new List<string>(),
-                SelectedTagIds = new List<int>()
+                TagNames = t.Tags
+                    .Select(tag => tag.Name)
+                    .ToList(),
+
+                SelectedTagIds = t.Tags
+                    .Select(tag => tag.Id)
+                    .ToList()
             }).ToList();
 
             return new TodoIndexViewModel
@@ -163,6 +169,7 @@ namespace TodoMaster.Services
         {
             var todo = await _context.Todos
                 .Include(t => t.Category)
+                .Include(t => t.Tags)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -183,8 +190,13 @@ namespace TodoMaster.Services
                 CategoryId = todo.CategoryId,
                 CategoryName = todo.Category?.Name,
 
-                TagNames = new List<string>(),
-                SelectedTagIds = new List<int>()
+                TagNames = todo.Tags
+                    .Select(tag => tag.Name)
+                    .ToList(),
+
+                SelectedTagIds = todo.Tags
+                    .Select(tag => tag.Id)
+                    .ToList()
             };
         }
 
@@ -192,6 +204,7 @@ namespace TodoMaster.Services
         public async Task<TodoEditViewModel?> GetTodoForEditAsync(int id)
         {
             var todo = await _context.Todos
+                .Include(t => t.Tags)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -207,13 +220,12 @@ namespace TodoMaster.Services
                 Description = todo.Description,
                 IsCompleted = todo.IsCompleted,
                 DueDate = todo.DueDate,
-
-                // Convert enum to string
                 Priority = todo.Priority.ToString(),
-
                 CategoryId = todo.CategoryId,
 
-                SelectedTagIds = new List<int>()
+                SelectedTagIds = todo.Tags
+                    .Select(tag => tag.Id)
+                    .ToList()
             };
         }
 
@@ -250,6 +262,17 @@ namespace TodoMaster.Services
                 CategoryId = model.CategoryId
             };
 
+            // Add selected Tags
+            if (model.SelectedTagIds != null &&
+                model.SelectedTagIds.Count > 0)
+            {
+                var tags = await _context.Tags
+                    .Where(t => model.SelectedTagIds.Contains(t.Id))
+                    .ToListAsync();
+
+                todo.Tags = tags;
+            }
+
             _context.Todos.Add(todo);
 
             await _context.SaveChangesAsync();
@@ -262,6 +285,7 @@ namespace TodoMaster.Services
             TodoEditViewModel model)
         {
             var todo = await _context.Todos
+                .Include(t => t.Tags)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
 
             if (todo == null)
@@ -293,6 +317,22 @@ namespace TodoMaster.Services
             todo.Priority = priority;
 
             todo.CategoryId = model.CategoryId;
+
+            // Replace existing Tags
+            todo.Tags.Clear();
+
+            if (model.SelectedTagIds != null &&
+                model.SelectedTagIds.Count > 0)
+            {
+                var tags = await _context.Tags
+                    .Where(t => model.SelectedTagIds.Contains(t.Id))
+                    .ToListAsync();
+
+                foreach (var tag in tags)
+                {
+                    todo.Tags.Add(tag);
+                }
+            }
 
             await _context.SaveChangesAsync();
 
