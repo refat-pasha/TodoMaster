@@ -166,15 +166,15 @@
                             <option value="">All</option>
 
                             @if (ViewBag.Categories != null)
-                            {
-                                foreach (var category in ViewBag.Categories)
-                                {
-                                    <option value="@category.Value"
-                                            selected="@(Model.CategoryFilter?.ToString() == category.Value)">
-                                        @category.Text
-                                    </option>
-                                }
-                            }
+{
+    foreach (var category in ViewBag.Categories)
+    {
+        <option value="@category.Id"
+                selected="@(Model.CategoryFilter == category.Id)">
+            @category.Name
+        </option>
+    }
+}
 
                         </select>
                     </div>
