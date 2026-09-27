@@ -7,14 +7,14 @@ namespace TodoMaster.Services
 {
     public class TodoService : ITodoService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public TodoService(ApplicationDbContext context)
+        public TodoService(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: Todo list with search, filters, sorting, category and tag information
+        // GET: /Todo/Index
         public async Task<TodoIndexViewModel> GetTodosAsync(
             string? searchTerm = null,
             string? statusFilter = null,
@@ -25,8 +25,7 @@ namespace TodoMaster.Services
         {
             var query = _context.Todos
                 .Include(t => t.Category)
-                .Include(t => t.TodoTags)
-                    .ThenInclude(tt => tt.Tag)
+                .AsNoTracking()
                 .AsQueryable();
 
             // Search
@@ -58,23 +57,25 @@ namespace TodoMaster.Services
             }
 
             // Priority filter
-            if (!string.IsNullOrWhiteSpace(priorityFilter))
+            if (!string.IsNullOrWhiteSpace(priorityFilter) &&
+                Enum.TryParse<Priority>(
+                    priorityFilter,
+                    true,
+                    out var parsedPriority))
             {
-                query = query.Where(t => t.Priority == priorityFilter);
+                query = query.Where(t => t.Priority == parsedPriority);
             }
 
             // Category filter
             if (categoryFilter.HasValue)
             {
-                query = query.Where(t => t.CategoryId == categoryFilter.Value);
+                query = query.Where(t =>
+                    t.CategoryId == categoryFilter.Value);
             }
 
-            // Tag filter
-            if (tagFilter.HasValue)
-            {
-                query = query.Where(t =>
-                    t.TodoTags.Any(tt => tt.TagId == tagFilter.Value));
-            }
+            // Tag filtering is temporarily skipped here because
+            // the current Todo model does not expose a TodoTags
+            // navigation property.
 
             // Sorting
             query = sortOrder switch
@@ -106,11 +107,31 @@ namespace TodoMaster.Services
 
             var todos = await query.ToListAsync();
 
+            // Statistics
             var allTodos = await _context.Todos
                 .AsNoTracking()
                 .ToListAsync();
 
-            var model = new TodoIndexViewModel
+            var todoViewModels = todos.Select(t => new TodoViewModel
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Description = t.Description,
+                IsCompleted = t.IsCompleted,
+                CreatedAt = t.CreatedAt,
+                DueDate = t.DueDate,
+
+                // Convert enum to string for the ViewModel
+                Priority = t.Priority.ToString(),
+
+                CategoryId = t.CategoryId,
+                CategoryName = t.Category?.Name,
+
+                TagNames = new List<string>(),
+                SelectedTagIds = new List<int>()
+            }).ToList();
+
+            return new TodoIndexViewModel
             {
                 SearchTerm = searchTerm,
                 StatusFilter = statusFilter,
@@ -121,37 +142,20 @@ namespace TodoMaster.Services
 
                 TotalTodos = allTodos.Count,
 
-                CompletedTodos = allTodos.Count(t => t.IsCompleted),
+                CompletedTodos =
+                    allTodos.Count(t => t.IsCompleted),
 
-                PendingTodos = allTodos.Count(t => !t.IsCompleted),
+                PendingTodos =
+                    allTodos.Count(t => !t.IsCompleted),
 
-                OverdueTodos = allTodos.Count(t =>
-                    !t.IsCompleted &&
-                    t.DueDate.HasValue &&
-                    t.DueDate.Value.Date < DateTime.Today),
+                OverdueTodos =
+                    allTodos.Count(t =>
+                        !t.IsCompleted &&
+                        t.DueDate.HasValue &&
+                        t.DueDate.Value.Date < DateTime.Today),
 
-                Todos = todos.Select(t => new TodoViewModel
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Description = t.Description,
-                    IsCompleted = t.IsCompleted,
-                    CreatedAt = t.CreatedAt,
-                    DueDate = t.DueDate,
-                    Priority = t.Priority,
-                    CategoryId = t.CategoryId,
-                    CategoryName = t.Category?.Name,
-                    TagNames = t.TodoTags
-                        .Where(tt => tt.Tag != null)
-                        .Select(tt => tt.Tag!.Name)
-                        .ToList(),
-                    SelectedTagIds = t.TodoTags
-                        .Select(tt => tt.TagId)
-                        .ToList()
-                }).ToList()
+                Todos = todoViewModels
             };
-
-            return model;
         }
 
         // GET: /Todo/Details/5
@@ -159,8 +163,6 @@ namespace TodoMaster.Services
         {
             var todo = await _context.Todos
                 .Include(t => t.Category)
-                .Include(t => t.TodoTags)
-                    .ThenInclude(tt => tt.Tag)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -177,16 +179,12 @@ namespace TodoMaster.Services
                 IsCompleted = todo.IsCompleted,
                 CreatedAt = todo.CreatedAt,
                 DueDate = todo.DueDate,
-                Priority = todo.Priority,
+                Priority = todo.Priority.ToString(),
                 CategoryId = todo.CategoryId,
                 CategoryName = todo.Category?.Name,
-                TagNames = todo.TodoTags
-                    .Where(tt => tt.Tag != null)
-                    .Select(tt => tt.Tag!.Name)
-                    .ToList(),
-                SelectedTagIds = todo.TodoTags
-                    .Select(tt => tt.TagId)
-                    .ToList()
+
+                TagNames = new List<string>(),
+                SelectedTagIds = new List<int>()
             };
         }
 
@@ -194,7 +192,6 @@ namespace TodoMaster.Services
         public async Task<TodoEditViewModel?> GetTodoForEditAsync(int id)
         {
             var todo = await _context.Todos
-                .Include(t => t.TodoTags)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -210,29 +207,46 @@ namespace TodoMaster.Services
                 Description = todo.Description,
                 IsCompleted = todo.IsCompleted,
                 DueDate = todo.DueDate,
-                Priority = todo.Priority,
+
+                // Convert enum to string
+                Priority = todo.Priority.ToString(),
+
                 CategoryId = todo.CategoryId,
-                SelectedTagIds = todo.TodoTags
-                    .Select(tt => tt.TagId)
-                    .ToList()
+
+                SelectedTagIds = new List<int>()
             };
         }
 
         // POST: /Todo/Create
         public async Task<int> CreateTodoAsync(TodoCreateViewModel model)
         {
+            var priority = Priority.Medium;
+
+            if (!string.IsNullOrWhiteSpace(model.Priority))
+            {
+                Enum.TryParse(
+                    model.Priority,
+                    true,
+                    out priority);
+            }
+
             var todo = new Todo
             {
                 Title = model.Title.Trim(),
-                Description = string.IsNullOrWhiteSpace(model.Description)
-                    ? null
-                    : model.Description.Trim(),
+
+                Description =
+                    string.IsNullOrWhiteSpace(model.Description)
+                        ? null
+                        : model.Description.Trim(),
+
                 IsCompleted = false,
+
                 CreatedAt = DateTime.Now,
+
                 DueDate = model.DueDate,
-                Priority = string.IsNullOrWhiteSpace(model.Priority)
-                    ? "Medium"
-                    : model.Priority,
+
+                Priority = priority,
+
                 CategoryId = model.CategoryId
             };
 
@@ -240,36 +254,14 @@ namespace TodoMaster.Services
 
             await _context.SaveChangesAsync();
 
-            // Add selected tags
-            if (model.SelectedTagIds != null &&
-                model.SelectedTagIds.Count > 0)
-            {
-                foreach (var tagId in model.SelectedTagIds.Distinct())
-                {
-                    var tagExists = await _context.Tags
-                        .AnyAsync(t => t.Id == tagId);
-
-                    if (tagExists)
-                    {
-                        _context.TodoTags.Add(new TodoTag
-                        {
-                            TodoId = todo.Id,
-                            TagId = tagId
-                        });
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-            }
-
             return todo.Id;
         }
 
         // POST: /Todo/Edit/5
-        public async Task<bool> UpdateTodoAsync(TodoEditViewModel model)
+        public async Task<bool> UpdateTodoAsync(
+            TodoEditViewModel model)
         {
             var todo = await _context.Todos
-                .Include(t => t.TodoTags)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
 
             if (todo == null)
@@ -277,43 +269,30 @@ namespace TodoMaster.Services
                 return false;
             }
 
+            var priority = Priority.Medium;
+
+            if (!string.IsNullOrWhiteSpace(model.Priority))
+            {
+                Enum.TryParse(
+                    model.Priority,
+                    true,
+                    out priority);
+            }
+
             todo.Title = model.Title.Trim();
 
-            todo.Description = string.IsNullOrWhiteSpace(model.Description)
-                ? null
-                : model.Description.Trim();
+            todo.Description =
+                string.IsNullOrWhiteSpace(model.Description)
+                    ? null
+                    : model.Description.Trim();
 
             todo.IsCompleted = model.IsCompleted;
+
             todo.DueDate = model.DueDate;
 
-            todo.Priority = string.IsNullOrWhiteSpace(model.Priority)
-                ? "Medium"
-                : model.Priority;
+            todo.Priority = priority;
 
             todo.CategoryId = model.CategoryId;
-
-            // Remove existing tags
-            _context.TodoTags.RemoveRange(todo.TodoTags);
-
-            // Add selected tags
-            if (model.SelectedTagIds != null &&
-                model.SelectedTagIds.Count > 0)
-            {
-                foreach (var tagId in model.SelectedTagIds.Distinct())
-                {
-                    var tagExists = await _context.Tags
-                        .AnyAsync(t => t.Id == tagId);
-
-                    if (tagExists)
-                    {
-                        todo.TodoTags.Add(new TodoTag
-                        {
-                            TodoId = todo.Id,
-                            TagId = tagId
-                        });
-                    }
-                }
-            }
 
             await _context.SaveChangesAsync();
 
