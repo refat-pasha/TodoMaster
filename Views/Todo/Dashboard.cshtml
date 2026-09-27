@@ -1,0 +1,246 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Dashboard</h1>
+            <p class="text-muted mb-0">
+                Welcome to TodoMaster. Here's your task overview.
+            </p>
+        </div>
+
+        <a asp-controller="Todo"
+           asp-action="Create"
+           class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            Add Todo
+        </a>
+    </div>
+
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+
+        <!-- Total -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Total Todos
+                            </p>
+
+                            <h2 class="fw-bold mb-0">
+                                @ViewBag.TotalTodos
+                            </h2>
+                        </div>
+
+                        <div class="fs-1 text-primary">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Completed -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Completed
+                            </p>
+
+                            <h2 class="fw-bold mb-0 text-success">
+                                @ViewBag.CompletedTodos
+                            </h2>
+                        </div>
+
+                        <div class="fs-1 text-success">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Pending -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Pending
+                            </p>
+
+                            <h2 class="fw-bold mb-0 text-warning">
+                                @ViewBag.PendingTodos
+                            </h2>
+                        </div>
+
+                        <div class="fs-1 text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Overdue -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Overdue
+                            </p>
+
+                            <h2 class="fw-bold mb-0 text-danger">
+                                @ViewBag.OverdueTodos
+                            </h2>
+                        </div>
+
+                        <div class="fs-1 text-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Today's Tasks -->
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <h5 class="fw-bold mb-0">
+                            Today's Overview
+                        </h5>
+
+                        <a asp-controller="Todo"
+                           asp-action="Index"
+                           class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row text-center">
+
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h3 class="fw-bold">
+                                @ViewBag.TodayTodos
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Due Today
+                            </p>
+                        </div>
+
+
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h3 class="fw-bold text-success">
+                                @ViewBag.CompletedTodos
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Completed
+                            </p>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <h3 class="fw-bold text-warning">
+                                @ViewBag.PendingTodos
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Remaining
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">
+                        Quick Actions
+                    </h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="d-grid gap-2">
+
+                        <a asp-controller="Todo"
+                           asp-action="Create"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Create Todo
+                        </a>
+
+                        <a asp-controller="Todo"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-list-check me-1"></i>
+                            View Todos
+                        </a>
+
+                        <a asp-controller="Category"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-folder me-1"></i>
+                            Manage Categories
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

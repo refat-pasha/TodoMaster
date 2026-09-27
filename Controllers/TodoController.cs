@@ -20,7 +20,38 @@ namespace TodoMaster.Controllers
             _context = context;
         }
 
-        
+        // GET: /Todo/Dashboard
+public async Task<IActionResult> Dashboard()
+{
+    var todos = await _context.Todos
+        .Include(t => t.Category)
+        .Include(t => t.Tags)
+        .ToListAsync();
+
+    var totalTodos = todos.Count;
+
+    var completedTodos = todos.Count(t => t.IsCompleted);
+
+    var pendingTodos = todos.Count(t => !t.IsCompleted);
+
+    var overdueTodos = todos.Count(t =>
+        !t.IsCompleted &&
+        t.DueDate.HasValue &&
+        t.DueDate.Value.Date < DateTime.Today);
+
+    var todayTodos = todos.Count(t =>
+        !t.IsCompleted &&
+        t.DueDate.HasValue &&
+        t.DueDate.Value.Date == DateTime.Today);
+
+    ViewBag.TotalTodos = totalTodos;
+    ViewBag.CompletedTodos = completedTodos;
+    ViewBag.PendingTodos = pendingTodos;
+    ViewBag.OverdueTodos = overdueTodos;
+    ViewBag.TodayTodos = todayTodos;
+
+    return View();
+}
 
        
        // GET: /Todo
