@@ -1,0 +1,176 @@
+@model TodoMaster.ViewModels.TodoViewModel
+
+@{
+    ViewData["Title"] = "Delete Todo";
+}
+
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2>Delete Todo</h2>
+            <p class="text-muted mb-0">
+                Confirm that you want to delete this todo.
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Back to List
+        </a>
+
+    </div>
+
+    <!-- Delete Confirmation Card -->
+    <div class="card shadow-sm border-danger">
+
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">
+                Confirm Deletion
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Warning -->
+            <div class="alert alert-warning">
+                <strong>Warning!</strong>
+                This action cannot be undone.
+            </div>
+
+            <!-- Title -->
+            <div class="mb-3">
+                <strong>Title</strong>
+
+                <p class="mb-0">
+                    @Model.Title
+                </p>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+
+                <strong>Description</strong>
+
+                @if (string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p class="text-muted mb-0">
+                        No description provided.
+                    </p>
+                }
+                else
+                {
+                    <p class="mb-0">
+                        @Model.Description
+                    </p>
+                }
+
+            </div>
+
+            <!-- Priority -->
+            <div class="mb-3">
+
+                <strong>Priority</strong>
+
+                <p class="mb-0">
+                    @Model.Priority
+                </p>
+
+            </div>
+
+            <!-- Category -->
+            <div class="mb-3">
+
+                <strong>Category</strong>
+
+                @if (string.IsNullOrWhiteSpace(Model.CategoryName))
+                {
+                    <p class="text-muted mb-0">
+                        No Category
+                    </p>
+                }
+                else
+                {
+                    <p class="mb-0">
+                        @Model.CategoryName
+                    </p>
+                }
+
+            </div>
+
+            <!-- Due Date -->
+            <div class="mb-3">
+
+                <strong>Due Date</strong>
+
+                @if (Model.DueDate.HasValue)
+                {
+                    <p class="mb-0">
+                        @Model.DueDate.Value.ToString("dd MMM yyyy")
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        No due date
+                    </p>
+                }
+
+            </div>
+
+            <!-- Tags -->
+            <div class="mb-4">
+
+                <strong>Tags</strong>
+
+                @if (Model.TagNames != null &&
+                     Model.TagNames.Count > 0)
+                {
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+
+                        @foreach (var tag in Model.TagNames)
+                        {
+                            <span class="badge bg-secondary">
+                                @tag
+                            </span>
+                        }
+
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">
+                        No tags assigned.
+                    </p>
+                }
+
+            </div>
+
+            <hr />
+
+            <!-- Delete Form -->
+            <form asp-action="Delete"
+                  asp-route-id="@Model.Id"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit"
+                        class="btn btn-danger">
+                    Yes, Delete Todo
+                </button>
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>

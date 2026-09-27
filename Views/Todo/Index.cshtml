@@ -426,13 +426,11 @@
 
                                         @Html.AntiForgeryToken()
 
-                                        <button type="submit"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Delete">
-
-                                            <i class="bi bi-trash"></i>
-
-                                        </button>
+                                        <a asp-action="DeleteConfirmation"
+   asp-route-id="@todo.Id"
+   class="btn btn-sm btn-danger">
+    Delete
+</a>
 
                                     </form>
 
