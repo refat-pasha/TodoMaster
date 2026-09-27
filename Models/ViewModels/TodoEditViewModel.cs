@@ -23,6 +23,7 @@ namespace TodoMaster.ViewModels
         [Display(Name = "Category")]
         public int? CategoryId { get; set; }
 
+        [Display(Name = "Tags")]
         public List<int> SelectedTagIds { get; set; } = new();
     }
 }
