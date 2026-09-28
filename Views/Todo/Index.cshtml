@@ -1,250 +1,462 @@
+@using TodoMaster.Models
 @model TodoMaster.ViewModels.TodoIndexViewModel
 
 @{
-    ViewData["Title"] = "Todo List";
+    ViewData["Title"] = "My Todos";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
 
-    <!-- Success Message -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
+    <!-- =========================================================
+         HEADER
+         ========================================================= -->
 
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close">
-            </button>
-        </div>
-    }
-
-    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-            <h2>My Todos</h2>
+            <h1 class="display-6 fw-bold mb-1">
+                My Todos
+            </h1>
 
             <p class="text-muted mb-0">
-                Manage your tasks, categories, priorities, and tags.
+                Manage your tasks and stay organized.
             </p>
         </div>
 
-        <a asp-action="Create"
-           class="btn btn-primary">
-            + Create Todo
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i>
+            Add Todo
         </a>
 
     </div>
 
-    <!-- Statistics -->
+
+    <!-- =========================================================
+         TODO STATISTICS
+         ========================================================= -->
+
     <div class="row g-3 mb-4">
 
         <!-- Total -->
         <div class="col-md-3">
-            <div class="card shadow-sm">
+
+            <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
-                    <h6 class="text-muted">
-                        Total Todos
-                    </h6>
+                    <div class="d-flex justify-content-between align-items-center">
 
-                    <h3 class="mb-0">
-                        @Model.TotalTodos
-                    </h3>
+                        <div>
 
-                </div>
-            </div>
-        </div>
+                            <p class="text-muted mb-1">
+                                Total
+                            </p>
 
-        <!-- Completed -->
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.TotalCount
+                            </h3>
 
-                    <h6 class="text-muted">
-                        Completed
-                    </h6>
+                        </div>
 
-                    <h3 class="mb-0 text-success">
-                        @Model.CompletedTodos
-                    </h3>
+                        <div class="fs-2 text-primary">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+
+                    </div>
 
                 </div>
+
             </div>
+
         </div>
+
 
         <!-- Pending -->
         <div class="col-md-3">
-            <div class="card shadow-sm">
+
+            <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
-                    <h6 class="text-muted">
-                        Pending
-                    </h6>
+                    <div class="d-flex justify-content-between align-items-center">
 
-                    <h3 class="mb-0 text-warning">
-                        @Model.PendingTodos
-                    </h3>
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Pending
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.PendingCount
+                            </h3>
+
+                        </div>
+
+                        <div class="fs-2 text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+
+                    </div>
 
                 </div>
+
             </div>
+
         </div>
+
+
+        <!-- Completed -->
+        <div class="col-md-3">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Completed
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.CompletedCount
+                            </h3>
+
+                        </div>
+
+                        <div class="fs-2 text-success">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
 
         <!-- Overdue -->
         <div class="col-md-3">
-            <div class="card shadow-sm">
+
+            <div class="card shadow-sm border-0 h-100">
+
                 <div class="card-body">
 
-                    <h6 class="text-muted">
-                        Overdue
-                    </h6>
+                    <div class="d-flex justify-content-between align-items-center">
 
-                    <h3 class="mb-0 text-danger">
-                        @Model.OverdueTodos
-                    </h3>
+                        <div>
+
+                            <p class="text-muted mb-1">
+                                Overdue
+                            </p>
+
+                            <h3 class="fw-bold mb-0">
+                                @ViewBag.OverdueCount
+                            </h3>
+
+                        </div>
+
+                        <div class="fs-2 text-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+
+                    </div>
 
                 </div>
+
             </div>
+
         </div>
 
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
+
+    <!-- =========================================================
+         SEARCH & FILTER
+         ========================================================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
 
         <div class="card-body">
 
-            <form asp-action="Index"
-                  method="get">
+            <form asp-action="Index" method="get">
 
                 <div class="row g-3">
 
                     <!-- Search -->
-                    <div class="col-md-4">
+                    <div class="col-lg-3 col-md-6">
 
-                        <label class="form-label">
+                        <label class="form-label fw-semibold">
                             Search
                         </label>
 
                         <input type="text"
                                name="search"
-                               value="@Model.SearchTerm"
+                               value="@ViewBag.Search"
                                class="form-control"
-                               placeholder="Search title or description..." />
+                               placeholder="Search by title or description..." />
 
                     </div>
 
-                    <!-- Status -->
-                    <div class="col-md-2">
 
-                        <label class="form-label">
+                    <!-- Status -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
                             Status
                         </label>
 
-                        <select name="status"
-                                class="form-select">
+                        <select name="status" class="form-select">
 
-                            <option value=""
-                                    selected="@(string.IsNullOrEmpty(Model.StatusFilter))">
-                                All
-                            </option>
+                            @if (string.IsNullOrEmpty(ViewBag.Status))
+                            {
+                                <option value="" selected>
+                                    All
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="">
+                                    All
+                                </option>
+                            }
 
-                            <option value="pending"
-                                    selected="@(Model.StatusFilter == "pending")">
-                                Pending
-                            </option>
 
-                            <option value="completed"
-                                    selected="@(Model.StatusFilter == "completed")">
-                                Completed
-                            </option>
+                            @if (ViewBag.Status == "pending")
+                            {
+                                <option value="pending" selected>
+                                    Pending
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="pending">
+                                    Pending
+                                </option>
+                            }
 
-                            <option value="overdue"
-                                    selected="@(Model.StatusFilter == "overdue")">
-                                Overdue
-                            </option>
+
+                            @if (ViewBag.Status == "completed")
+                            {
+                                <option value="completed" selected>
+                                    Completed
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="completed">
+                                    Completed
+                                </option>
+                            }
 
                         </select>
 
                     </div>
 
-                    <!-- Priority -->
-                    <div class="col-md-2">
 
-                        <label class="form-label">
+                    <!-- Priority -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
                             Priority
                         </label>
 
-                        <select name="priority"
-                                class="form-select">
+                        <select name="priority" class="form-select">
 
-                            <option value=""
-                                    selected="@(string.IsNullOrEmpty(Model.PriorityFilter))">
-                                All
-                            </option>
-
-                            @foreach (var priority in
-                                Enum.GetValues<TodoMaster.Models.Priority>())
+                            @if (ViewBag.Priority == null)
                             {
-                                <option value="@priority"
-                                        selected="@(Model.PriorityFilter == priority.ToString())">
-                                    @priority
+                                <option value="" selected>
+                                    All
                                 </option>
+                            }
+                            else
+                            {
+                                <option value="">
+                                    All
+                                </option>
+                            }
+
+
+                            @foreach (Priority priority in Enum.GetValues<Priority>())
+                            {
+                                @if (ViewBag.Priority?.ToString() == priority.ToString())
+                                {
+                                    <option value="@priority" selected>
+                                        @priority
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@priority">
+                                        @priority
+                                    </option>
+                                }
                             }
 
                         </select>
 
                     </div>
 
-                    <!-- Category -->
-                    <div class="col-md-2">
 
-                        <label class="form-label">
+                    <!-- Category -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
                             Category
                         </label>
 
-                        <select name="categoryId"
-                                class="form-select">
+                        <select name="categoryId" class="form-select">
 
-                            <option value=""
-                                    selected="@(!Model.CategoryFilter.HasValue)">
-                                All
-                            </option>
-
-                            @foreach (var category in ViewBag.Categories)
+                            @if (ViewBag.CategoryId == null)
                             {
-                                <option value="@category.Id"
-                                        selected="@(Model.CategoryFilter == category.Id)">
-                                    @category.Name
+                                <option value="" selected>
+                                    All
                                 </option>
+                            }
+                            else
+                            {
+                                <option value="">
+                                    All
+                                </option>
+                            }
+
+
+                            @if (ViewBag.Categories != null)
+                            {
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    if (ViewBag.CategoryId?.ToString() == category.Id.ToString())
+                                    {
+                                        <option value="@category.Id" selected>
+                                            @category.Name
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@category.Id">
+                                            @category.Name
+                                        </option>
+                                    }
+                                }
                             }
 
                         </select>
 
                     </div>
 
-                    <!-- Tag -->
-                    <div class="col-md-2">
 
-                        <label class="form-label">
+                    <!-- Tag -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
                             Tag
                         </label>
 
-                        <select name="tagId"
-                                class="form-select">
+                        <select name="tagId" class="form-select">
 
-                            <option value=""
-                                    selected="@(!Model.TagFilter.HasValue)">
-                                All
-                            </option>
-
-                            @foreach (var tag in ViewBag.Tags)
+                            @if (ViewBag.TagId == null)
                             {
-                                <option value="@tag.Id"
-                                        selected="@(Model.TagFilter == tag.Id)">
-                                    @tag.Name
+                                <option value="" selected>
+                                    All
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="">
+                                    All
+                                </option>
+                            }
+
+
+                            @if (ViewBag.Tags != null)
+                            {
+                                @foreach (var tag in ViewBag.Tags)
+                                {
+                                    if (ViewBag.TagId?.ToString() == tag.Id.ToString())
+                                    {
+                                        <option value="@tag.Id" selected>
+                                            @tag.Name
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@tag.Id">
+                                            @tag.Name
+                                        </option>
+                                    }
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Sort -->
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Sort By
+                        </label>
+
+                        <select name="sort" class="form-select">
+
+                            @if (string.IsNullOrEmpty(ViewBag.Sort))
+                            {
+                                <option value="" selected>
+                                    Newest
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="">
+                                    Newest
+                                </option>
+                            }
+
+
+                            @if (ViewBag.Sort == "oldest")
+                            {
+                                <option value="oldest" selected>
+                                    Oldest
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="oldest">
+                                    Oldest
+                                </option>
+                            }
+
+
+                            @if (ViewBag.Sort == "dueDate")
+                            {
+                                <option value="dueDate" selected>
+                                    Due Date
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="dueDate">
+                                    Due Date
+                                </option>
+                            }
+
+
+                            @if (ViewBag.Sort == "priority")
+                            {
+                                <option value="priority" selected>
+                                    Priority
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="priority">
+                                    Priority
                                 </option>
                             }
 
@@ -252,106 +464,25 @@
 
                     </div>
 
-                    <!-- Sort -->
-                    <div class="col-md-3">
 
-                        <label class="form-label">
-                            Sort By
-                        </label>
-
-                        <select name="sort"
-                                class="form-select">
-
-                            <option value="created_desc"
-                                    selected="@(Model.SortOrder == "created_desc")">
-                                Newest First
-                            </option>
-
-                            <option value="created_asc"
-                                    selected="@(Model.SortOrder == "created_asc")">
-                                Oldest First
-                            </option>
-
-                            <option value="title_asc"
-                                    selected="@(Model.SortOrder == "title_asc")">
-                                Title A-Z
-                            </option>
-
-                            <option value="title_desc"
-                                    selected="@(Model.SortOrder == "title_desc")">
-                                Title Z-A
-                            </option>
-
-                            <option value="due_asc"
-                                    selected="@(Model.SortOrder == "due_asc")">
-                                Due Date ↑
-                            </option>
-
-                            <option value="due_desc"
-                                    selected="@(Model.SortOrder == "due_desc")">
-                                Due Date ↓
-                            </option>
-
-                            <option value="priority_asc"
-                                    selected="@(Model.SortOrder == "priority_asc")">
-                                Priority Low-High
-                            </option>
-
-                            <option value="priority_desc"
-                                    selected="@(Model.SortOrder == "priority_desc")">
-                                Priority High-Low
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- Page Size -->
-<div class="col-md-2">
-
-    <label class="form-label">
-        Per Page
-    </label>
-
-    <select name="pageSize"
-            class="form-select"
-            onchange="this.form.submit()">
-
-        <option value="5"
-                selected="@(Model.PageSize == 5)">
-            5
-        </option>
-
-        <option value="10"
-                selected="@(Model.PageSize == 10)">
-            10
-        </option>
-
-        <option value="20"
-                selected="@(Model.PageSize == 20)">
-            20
-        </option>
-
-        <option value="50"
-                selected="@(Model.PageSize == 50)">
-            50
-        </option>
-
-    </select>
-
-</div>
-
-                    <!-- Filter Buttons -->
-                    <div class="col-md-7 d-flex align-items-end gap-2">
+                    <!-- Buttons -->
+                    <div class="col-12 d-flex justify-content-end gap-2">
 
                         <button type="submit"
                                 class="btn btn-primary">
-                            Apply Filters
+
+                            <i class="bi bi-search"></i>
+                            Search
+
                         </button>
 
+
                         <a asp-action="Index"
-                           class="btn btn-secondary">
-                            Clear Filters
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Reset
+
                         </a>
 
                     </div>
@@ -364,56 +495,122 @@
 
     </div>
 
-    <!-- Todo List -->
-    @if (Model.Todos != null &&
-         Model.Todos.Count > 0)
+
+    <!-- =========================================================
+         TODO LIST
+         ========================================================= -->
+
+    @if (Model.Todos == null || !Model.Todos.Any())
+    {
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <div class="mb-3">
+
+                    <i class="bi bi-check2-circle display-4 text-muted"></i>
+
+                </div>
+
+                <h4>
+                    No todos found
+                </h4>
+
+                <p class="text-muted">
+                    Try changing your search or filters.
+                </p>
+
+                <a asp-action="Create"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-plus-lg"></i>
+                    Create Your First Todo
+
+                </a>
+
+            </div>
+
+        </div>
+    }
+    else
     {
         <div class="row g-3">
 
             @foreach (var todo in Model.Todos)
             {
+                var isOverdue =
+                    !todo.IsCompleted &&
+                    todo.DueDate.HasValue &&
+                    todo.DueDate.Value.Date < DateTime.Today;
+
+
                 <div class="col-12">
 
-                    <div class="card shadow-sm
-                        @(todo.IsCompleted ? "border-success" : "")">
+                    <div class="card shadow-sm border-0
+                                @(isOverdue ? "border-start border-4 border-danger" : "")">
 
                         <div class="card-body">
 
                             <div class="row align-items-center">
 
-                                <!-- Todo Information -->
-                                <div class="col-md-7">
 
-                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                <!-- =================================================
+                                     COMPLETE / UNCOMPLETE
+                                     ================================================= -->
+
+                                <div class="col-auto">
+
+                                    <form asp-action="Complete"
+                                          asp-route-id="@todo.Id"
+                                          method="post"
+                                          class="d-inline">
 
                                         @if (todo.IsCompleted)
                                         {
-                                            <h5 class="mb-0 text-decoration-line-through text-muted">
-                                                @todo.Title
-                                            </h5>
+                                            <button type="submit"
+                                                    class="btn btn-success rounded-circle"
+                                                    title="Mark as pending">
+
+                                                <i class="bi bi-check-lg"></i>
+
+                                            </button>
                                         }
                                         else
                                         {
-                                            <h5 class="mb-0">
-                                                @todo.Title
-                                            </h5>
+                                            <button type="submit"
+                                                    class="btn btn-outline-secondary rounded-circle"
+                                                    title="Mark as completed">
+
+                                                <i class="bi bi-circle"></i>
+
+                                            </button>
                                         }
 
-                                        <!-- Status -->
-                                        @if (todo.IsCompleted)
-                                        {
-                                            <span class="badge bg-success">
-                                                Completed
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                Pending
-                                            </span>
-                                        }
+                                    </form>
 
-                                    </div>
+                                </div>
+
+
+                                <!-- =================================================
+                                     TODO INFORMATION
+                                     ================================================= -->
+
+                                <div class="col">
+
+                                    <!-- Title -->
+                                    @if (todo.IsCompleted)
+                                    {
+                                        <h5 class="mb-1 text-decoration-line-through text-muted">
+                                            @todo.Title
+                                        </h5>
+                                    }
+                                    else
+                                    {
+                                        <h5 class="mb-1">
+                                            @todo.Title
+                                        </h5>
+                                    }
+
 
                                     <!-- Description -->
                                     @if (!string.IsNullOrWhiteSpace(todo.Description))
@@ -423,145 +620,105 @@
                                         </p>
                                     }
 
-                                    <!-- Category -->
-                                    @if (!string.IsNullOrWhiteSpace(todo.CategoryName))
-                                    {
-                                        <span class="badge bg-primary me-1">
-                                            @todo.CategoryName
+
+                                    <!-- Metadata -->
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+
+
+                                        <!-- Priority -->
+                                        <span class="badge
+                                            @(todo.Priority == "High"
+    ? "bg-danger"
+    : todo.Priority == "Medium"
+        ? "bg-warning text-dark"
+        : "bg-secondary")">
+
+                                            @todo.Priority
+
                                         </span>
-                                    }
 
-                                    <!-- Tags -->
-                                    @if (todo.TagNames != null &&
-                                         todo.TagNames.Count > 0)
-                                    {
-                                        @foreach (var tag in todo.TagNames)
-                                        {
-                                            <span class="badge bg-secondary me-1">
-                                                #@tag
-                                            </span>
-                                        }
-                                    }
 
-                                </div>
-
-                                <!-- Todo Metadata -->
-                                <div class="col-md-2">
-
-                                    <!-- Priority -->
-                                    <div class="mb-2">
-
-                                        <small class="text-muted d-block">
-                                            Priority
-                                        </small>
-
-                                        @if (todo.Priority == "High")
-                                        {
-                                            <span class="badge bg-danger">
-                                                High
-                                            </span>
-                                        }
-                                        else if (todo.Priority == "Medium")
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                Medium
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-info text-dark">
-                                                Low
-                                            </span>
-                                        }
-
-                                    </div>
-
-                                    <!-- Due Date -->
-                                    <div>
-
-                                        <small class="text-muted d-block">
-                                            Due Date
-                                        </small>
-
+                                        <!-- Due Date -->
                                         @if (todo.DueDate.HasValue)
                                         {
-                                            var isOverdue =
-                                                !todo.IsCompleted &&
-                                                todo.DueDate.Value.Date < DateTime.Today;
-
-                                            if (isOverdue)
+                                            @if (isOverdue)
                                             {
-                                                <span class="text-danger fw-bold">
+                                                <span class="text-danger small fw-semibold">
+
+                                                    <i class="bi bi-exclamation-circle"></i>
+
+                                                    Overdue:
                                                     @todo.DueDate.Value.ToString("dd MMM yyyy")
+
                                                 </span>
                                             }
                                             else
                                             {
-                                                <span>
+                                                <span class="text-muted small">
+
+                                                    <i class="bi bi-calendar-event"></i>
+
+                                                    Due:
                                                     @todo.DueDate.Value.ToString("dd MMM yyyy")
+
                                                 </span>
                                             }
                                         }
-                                        else
-                                        {
-                                            <span class="text-muted">
-                                                No due date
-                                            </span>
-                                        }
+
+
+                                        <!-- Created Date -->
+                                        <span class="text-muted small">
+
+                                            <i class="bi bi-clock"></i>
+
+                                            @todo.CreatedAt.ToString("dd MMM yyyy")
+
+                                        </span>
 
                                     </div>
 
                                 </div>
 
-                                <!-- Actions -->
-                                <div class="col-md-3">
 
-                                    <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                                <!-- =================================================
+                                     ACTION BUTTONS
+                                     ================================================= -->
 
-                                        <!-- Toggle Complete -->
-                                        <form asp-action="ToggleComplete"
-                                              asp-route-id="@todo.Id"
-                                              method="post"
-                                              class="d-inline">
+                                <div class="col-auto">
 
-                                            @Html.AntiForgeryToken()
+                                    <div class="d-flex gap-2">
 
-                                            @if (todo.IsCompleted)
-                                            {
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-warning">
-                                                    Mark Pending
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-success">
-                                                    Complete
-                                                </button>
-                                            }
-
-                                        </form>
 
                                         <!-- Details -->
                                         <a asp-action="Details"
                                            asp-route-id="@todo.Id"
-                                           class="btn btn-sm btn-info">
-                                            Details
+                                           class="btn btn-sm btn-outline-info"
+                                           title="View details">
+
+                                            <i class="bi bi-eye"></i>
+
                                         </a>
+
 
                                         <!-- Edit -->
                                         <a asp-action="Edit"
                                            asp-route-id="@todo.Id"
-                                           class="btn btn-sm btn-primary">
-                                            Edit
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edit todo">
+
+                                            <i class="bi bi-pencil"></i>
+
                                         </a>
 
+
                                         <!-- Delete -->
-                                        <a asp-action="DeleteConfirmation"
+                                        <a asp-action="Delete"
                                            asp-route-id="@todo.Id"
-                                           class="btn btn-sm btn-danger">
-                                            Delete
+                                           class="btn btn-sm btn-outline-danger"
+                                           title="Delete todo">
+
+                                            <i class="bi bi-trash"></i>
+
                                         </a>
 
                                     </div>
@@ -579,117 +736,88 @@
 
         </div>
     }
-    else
-    {
-        <!-- Empty State -->
-        <div class="card shadow-sm">
 
-            <div class="card-body text-center py-5">
 
-                <h4>
-                    No Todos Found
-                </h4>
+    <!-- =========================================================
+         PAGINATION
+         ========================================================= -->
 
-                <p class="text-muted">
-                    There are no todos matching your current filters.
-                </p>
-
-                <a asp-action="Create"
-                   class="btn btn-primary">
-                    Create Your First Todo
-                </a>
-
-            </div>
-
-        </div>
-    }
-
-    <!-- Pagination -->
     @if (Model.TotalPages > 1)
     {
-        <nav aria-label="Todo pagination"
-             class="mt-4">
+        <div class="d-flex justify-content-center mt-4">
 
-            <ul class="pagination justify-content-center">
+            <nav aria-label="Todo pagination">
 
-                <!-- Previous -->
-                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                <ul class="pagination">
 
-                    @if (Model.HasPreviousPage)
-                    {
+
+                    <!-- Previous -->
+                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-search="@Model.SearchTerm"
-                           asp-route-status="@Model.StatusFilter"
-                           asp-route-priority="@Model.PriorityFilter"
-                           asp-route-categoryId="@Model.CategoryFilter"
-                           asp-route-tagId="@Model.TagFilter"
-                           asp-route-sort="@Model.SortOrder"
-                           asp-route-pageSize="@Model.PageSize"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-status="@ViewBag.Status"
+                           asp-route-priority="@ViewBag.Priority"
+                           asp-route-categoryId="@ViewBag.CategoryId"
+                           asp-route-tagId="@ViewBag.TagId"
+                           asp-route-sort="@ViewBag.Sort"
                            asp-route-page="@(Model.CurrentPage - 1)">
-                            Previous
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="page-link">
-                            Previous
-                        </span>
-                    }
 
-                </li>
+                            <i class="bi bi-chevron-left"></i>
 
-                <!-- Page Numbers -->
-                @for (var i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-search="@Model.SearchTerm"
-                           asp-route-status="@Model.StatusFilter"
-                           asp-route-priority="@Model.PriorityFilter"
-                           asp-route-categoryId="@Model.CategoryFilter"
-                           asp-route-tagId="@Model.TagFilter"
-                           asp-route-sort="@Model.SortOrder"
-                           asp-route-pageSize="@Model.PageSize"
-                           asp-route-page="@i">
-                            @i
                         </a>
 
                     </li>
-                }
 
-                <!-- Next -->
-                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
 
-                    @if (Model.HasNextPage)
+                    <!-- Page Numbers -->
+                    @for (int page = 1; page <= Model.TotalPages; page++)
                     {
+                        <li class="page-item @(page == Model.CurrentPage ? "active" : "")">
+
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-search="@ViewBag.Search"
+                               asp-route-status="@ViewBag.Status"
+                               asp-route-priority="@ViewBag.Priority"
+                               asp-route-categoryId="@ViewBag.CategoryId"
+                               asp-route-tagId="@ViewBag.TagId"
+                               asp-route-sort="@ViewBag.Sort"
+                               asp-route-page="@(page)">
+
+                                @(page)
+
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <!-- Next -->
+                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-search="@Model.SearchTerm"
-                           asp-route-status="@Model.StatusFilter"
-                           asp-route-priority="@Model.PriorityFilter"
-                           asp-route-categoryId="@Model.CategoryFilter"
-                           asp-route-tagId="@Model.TagFilter"
-                           asp-route-sort="@Model.SortOrder"
-                           asp-route-pageSize="@Model.PageSize"
+                           asp-route-search="@ViewBag.Search"
+                           asp-route-status="@ViewBag.Status"
+                           asp-route-priority="@ViewBag.Priority"
+                           asp-route-categoryId="@ViewBag.CategoryId"
+                           asp-route-tagId="@ViewBag.TagId"
+                           asp-route-sort="@ViewBag.Sort"
                            asp-route-page="@(Model.CurrentPage + 1)">
-                            Next
+
+                            <i class="bi bi-chevron-right"></i>
+
                         </a>
-                    }
-                    else
-                    {
-                        <span class="page-link">
-                            Next
-                        </span>
-                    }
 
-                </li>
+                    </li>
 
-            </ul>
+                </ul>
 
-        </nav>
+            </nav>
+
+        </div>
     }
 
 </div>

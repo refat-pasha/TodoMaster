@@ -1,52 +1,99 @@
-@model TodoMaster.ViewModels.TodoViewModel
+@using TodoMaster.Models
+@model TodoMaster.Models.Todo
 
 @{
     ViewData["Title"] = "Todo Details";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-            <h2>Todo Details</h2>
+            <h1 class="fw-bold mb-1">Todo Details</h1>
             <p class="text-muted mb-0">
-                View the complete information of this todo.
+                View complete information about this task.
             </p>
         </div>
 
-        <a asp-action="Index"
-           class="btn btn-secondary">
-            Back to List
-        </a>
+        <div class="d-flex gap-2">
+
+            <a asp-controller="Todo"
+               asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="btn btn-primary">
+
+                <i class="bi bi-pencil me-1"></i>
+                Edit
+
+            </a>
+
+            <a asp-controller="Todo"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+
+            </a>
+
+        </div>
 
     </div>
 
+
     <!-- Todo Details -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
 
-        <div class="card-body">
+        <!-- Title -->
+        <div class="card-header bg-white border-0 p-4">
 
-            <!-- Title and Status -->
-            <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-start">
 
-                <div class="d-flex align-items-center gap-2">
+                <div>
 
-                    <h3 class="mb-0">
+                    <h2 class="fw-bold mb-2">
                         @Model.Title
-                    </h3>
+                    </h2>
 
                     @if (Model.IsCompleted)
                     {
                         <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>
                             Completed
                         </span>
                     }
                     else
                     {
                         <span class="badge bg-warning text-dark">
+                            <i class="bi bi-clock me-1"></i>
                             Pending
+                        </span>
+                    }
+
+                </div>
+
+
+                <!-- Priority -->
+                <div>
+
+                    @if (Model.Priority == Priority.High)
+                    {
+                        <span class="badge bg-danger fs-6">
+                            High Priority
+                        </span>
+                    }
+                    else if (Model.Priority == Priority.Medium)
+                    {
+                        <span class="badge bg-warning text-dark fs-6">
+                            Medium Priority
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success fs-6">
+                            Low Priority
                         </span>
                     }
 
@@ -54,118 +101,201 @@
 
             </div>
 
-            <hr />
+        </div>
+
+
+        <div class="card-body p-4">
 
             <!-- Description -->
             <div class="mb-4">
 
-                <h5>Description</h5>
+                <h5 class="fw-bold mb-2">
+                    Description
+                </h5>
 
-                @if (string.IsNullOrWhiteSpace(Model.Description))
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
                 {
-                    <p class="text-muted">
-                        No description provided.
+                    <p class="text-muted mb-0"
+                       style="white-space: pre-line;">
+                        @Model.Description
                     </p>
                 }
                 else
                 {
-                    <p class="mb-0">
-                        @Model.Description
+                    <p class="text-muted fst-italic mb-0">
+                        No description provided.
                     </p>
                 }
 
             </div>
 
+
+            <hr />
+
+
             <!-- Information -->
-            <div class="row mb-4">
-
-                <!-- Priority -->
-                <div class="col-md-4 mb-3">
-
-                    <strong>Priority</strong>
-
-                    <div class="mt-2">
-
-                        @if (Model.Priority == "High")
-                        {
-                            <span class="badge bg-danger">
-                                High
-                            </span>
-                        }
-                        else if (Model.Priority == "Medium")
-                        {
-                            <span class="badge bg-warning text-dark">
-                                Medium
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-info text-dark">
-                                Low
-                            </span>
-                        }
-
-                    </div>
-
-                </div>
+            <div class="row g-4 mt-1">
 
                 <!-- Category -->
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6">
 
-                    <strong>Category</strong>
+                    <div class="d-flex align-items-center">
 
-                    <div class="mt-2">
+                        <div class="me-3 fs-4 text-primary">
+                            <i class="bi bi-folder"></i>
+                        </div>
 
-                        @if (string.IsNullOrWhiteSpace(Model.CategoryName))
-                        {
-                            <span class="text-muted">
-                                No Category
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-primary">
-                                @Model.CategoryName
-                            </span>
-                        }
+                        <div>
 
-                    </div>
+                            <small class="text-muted d-block">
+                                Category
+                            </small>
 
-                </div>
-
-                <!-- Due Date -->
-                <div class="col-md-4 mb-3">
-
-                    <strong>Due Date</strong>
-
-                    <div class="mt-2">
-
-                        @if (Model.DueDate.HasValue)
-                        {
-                            var isOverdue =
-                                !Model.IsCompleted &&
-                                Model.DueDate.Value.Date < DateTime.Today;
-
-                            if (isOverdue)
+                            @if (Model.Category != null)
                             {
-                                <span class="text-danger fw-bold">
-                                    @Model.DueDate.Value.ToString("dd MMM yyyy")
-                                    (Overdue)
+                                <span class="fw-semibold">
+                                    @Model.Category.Name
                                 </span>
                             }
                             else
                             {
-                                <span>
-                                    @Model.DueDate.Value.ToString("dd MMM yyyy")
+                                <span class="text-muted">
+                                    No category
                                 </span>
                             }
-                        }
-                        else
-                        {
-                            <span class="text-muted">
-                                No due date
-                            </span>
-                        }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Due Date -->
+                <div class="col-md-6">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="me-3 fs-4 text-primary">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+
+                        <div>
+
+                            <small class="text-muted d-block">
+                                Due Date
+                            </small>
+
+                            @if (Model.DueDate.HasValue)
+                            {
+                                var isOverdue =
+                                    !Model.IsCompleted &&
+                                    Model.DueDate.Value.Date < DateTime.Today;
+
+                                if (isOverdue)
+                                {
+                                    <span class="fw-semibold text-danger">
+                                        @Model.DueDate.Value.ToString("dd MMM yyyy")
+                                        <small>(Overdue)</small>
+                                    </span>
+                                }
+                                else if (Model.DueDate.Value.Date == DateTime.Today)
+                                {
+                                    <span class="fw-semibold text-warning">
+                                        Today
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="fw-semibold">
+                                        @Model.DueDate.Value.ToString("dd MMM yyyy")
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">
+                                    No due date
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Status -->
+                <div class="col-md-6">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="me-3 fs-4 text-primary">
+                            <i class="bi bi-check2-square"></i>
+                        </div>
+
+                        <div>
+
+                            <small class="text-muted d-block">
+                                Status
+                            </small>
+
+                            @if (Model.IsCompleted)
+                            {
+                                <span class="fw-semibold text-success">
+                                    Completed
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold text-warning">
+                                    Pending
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Priority -->
+                <div class="col-md-6">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="me-3 fs-4 text-primary">
+                            <i class="bi bi-flag"></i>
+                        </div>
+
+                        <div>
+
+                            <small class="text-muted d-block">
+                                Priority
+                            </small>
+
+                            @if (Model.Priority == Priority.High)
+                            {
+                                <span class="fw-semibold text-danger">
+                                    High
+                                </span>
+                            }
+                            else if (Model.Priority == Priority.Medium)
+                            {
+                                <span class="fw-semibold text-warning">
+                                    Medium
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold text-success">
+                                    Low
+                                </span>
+                            }
+
+                        </div>
 
                     </div>
 
@@ -173,20 +303,27 @@
 
             </div>
 
+
+            <hr class="my-4" />
+
+
             <!-- Tags -->
-            <div class="mb-4">
+            <div>
 
-                <h5>Tags</h5>
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-tags me-1"></i>
+                    Tags
+                </h5>
 
-                @if (Model.TagNames != null &&
-                     Model.TagNames.Count > 0)
+                @if (Model.Tags != null && Model.Tags.Any())
                 {
                     <div class="d-flex flex-wrap gap-2">
 
-                        @foreach (var tag in Model.TagNames)
+                        @foreach (var tag in Model.Tags)
                         {
                             <span class="badge bg-secondary">
-                                #@tag
+                                <i class="bi bi-tag me-1"></i>
+                                @tag.Name
                             </span>
                         }
 
@@ -194,72 +331,37 @@
                 }
                 else
                 {
-                    <p class="text-muted">
+                    <p class="text-muted mb-0">
                         No tags assigned.
                     </p>
                 }
 
             </div>
 
-            <!-- Created Date -->
-            <div class="mb-4">
+        </div>
 
-                <strong>Created At</strong>
 
-                <p class="text-muted mb-0">
-                    @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
-                </p>
+        <!-- Footer -->
+        <div class="card-footer bg-white border-0 p-4">
 
-            </div>
+            <div class="d-flex justify-content-between">
 
-            <hr />
-
-            <!-- Actions -->
-            <div class="d-flex flex-wrap gap-2">
-
-                <!-- Edit -->
-                <a asp-action="Edit"
+                <a asp-controller="Todo"
+                   asp-action="Delete"
                    asp-route-id="@Model.Id"
-                   class="btn btn-primary">
-                    Edit
-                </a>
+                   class="btn btn-outline-danger">
 
-                <!-- Toggle Complete -->
-                <form asp-action="ToggleComplete"
-                      asp-route-id="@Model.Id"
-                      method="post"
-                      class="d-inline">
-
-                    @Html.AntiForgeryToken()
-
-                    @if (Model.IsCompleted)
-                    {
-                        <button type="submit"
-                                class="btn btn-warning">
-                            Mark as Pending
-                        </button>
-                    }
-                    else
-                    {
-                        <button type="submit"
-                                class="btn btn-success">
-                            Mark as Completed
-                        </button>
-                    }
-
-                </form>
-
-                <!-- Delete -->
-                <a asp-action="DeleteConfirmation"
-                   asp-route-id="@Model.Id"
-                   class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>
                     Delete
+
                 </a>
 
-                <!-- Back -->
-                <a asp-action="Index"
+                <a asp-controller="Todo"
+                   asp-action="Index"
                    class="btn btn-secondary">
-                    Back to List
+
+                    Back to Todos
+
                 </a>
 
             </div>

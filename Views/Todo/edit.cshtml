@@ -9,7 +9,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>Edit Todo</h2>
-            <p class="text-muted mb-0">Update your todo information.</p>
+            <p class="text-muted mb-0">
+                Update your todo information.
+            </p>
         </div>
 
         <a asp-action="Index" class="btn btn-secondary">
@@ -28,53 +30,67 @@
 
                 <!-- Title -->
                 <div class="mb-3">
-                    <label asp-for="Title" class="form-label"></label>
+
+                    <label asp-for="Title"
+                           class="form-label">
+                    </label>
 
                     <input asp-for="Title"
                            class="form-control"
                            placeholder="Enter todo title" />
 
                     <span asp-validation-for="Title"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
+
 
                 <!-- Description -->
                 <div class="mb-3">
-                    <label asp-for="Description" class="form-label"></label>
+
+                    <label asp-for="Description"
+                           class="form-label">
+                    </label>
 
                     <textarea asp-for="Description"
                               class="form-control"
                               rows="4"
-                              placeholder="Enter todo description"></textarea>
+                              placeholder="Enter todo description">
+                    </textarea>
 
                     <span asp-validation-for="Description"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
+
 
                 <!-- Priority -->
                 <div class="mb-3">
-                    <label asp-for="Priority" class="form-label"></label>
+
+                    <label asp-for="Priority"
+                           class="form-label">
+                        Priority
+                    </label>
 
                     <select asp-for="Priority"
-                            class="form-select">
-
-                        @foreach (var priority in
-                            Enum.GetValues<TodoMaster.Models.Priority>())
-                        {
-                            <option value="@priority">
-                                @priority
-                            </option>
-                        }
-
+                            class="form-select"
+                            asp-items="Html.GetEnumSelectList<TodoMaster.Models.Priority>()">
                     </select>
 
                     <span asp-validation-for="Priority"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
+
 
                 <!-- Category -->
                 <div class="mb-3">
-                    <label asp-for="CategoryId" class="form-label">
+
+                    <label asp-for="CategoryId"
+                           class="form-label">
                         Category
                     </label>
 
@@ -85,22 +101,30 @@
                             -- No Category --
                         </option>
 
-                        @foreach (var category in ViewBag.Categories)
+                        @if (ViewBag.Categories != null)
                         {
-                            <option value="@category.Id">
-                                @category.Name
-                            </option>
+                            foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.Value">
+                                    @category.Text
+                                </option>
+                            }
                         }
 
                     </select>
 
                     <span asp-validation-for="CategoryId"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
+
 
                 <!-- Due Date -->
                 <div class="mb-3">
-                    <label asp-for="DueDate" class="form-label">
+
+                    <label asp-for="DueDate"
+                           class="form-label">
                         Due Date
                     </label>
 
@@ -109,8 +133,11 @@
                            class="form-control" />
 
                     <span asp-validation-for="DueDate"
-                          class="text-danger"></span>
+                          class="text-danger">
+                    </span>
+
                 </div>
+
 
                 <!-- Tags -->
                 <div class="mb-3">
@@ -161,6 +188,7 @@
 
                 </div>
 
+
                 <!-- Completed -->
                 <div class="mb-4">
 
@@ -179,17 +207,22 @@
 
                 </div>
 
+
                 <!-- Buttons -->
                 <div class="d-flex gap-2">
 
                     <button type="submit"
                             class="btn btn-primary">
+
                         Save Changes
+
                     </button>
 
                     <a asp-action="Index"
                        class="btn btn-secondary">
+
                         Cancel
+
                     </a>
 
                 </div>
@@ -201,8 +234,11 @@
 
 </div>
 
+
 @section Scripts {
+
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
 }
