@@ -342,31 +342,42 @@
 
 
         <!-- Footer -->
-        <div class="card-footer bg-white border-0 p-4">
+        <!-- Footer -->
+<div class="card-footer bg-white border-0 p-4">
+    <div class="d-flex justify-content-between align-items-center">
 
-            <div class="d-flex justify-content-between">
+        <form asp-controller="Todo"
+              asp-action="Delete"
+              method="post"
+              class="d-inline"
+              onsubmit="return confirm('Are you sure you want to delete this todo?');">
 
-                <a asp-controller="Todo"
-                   asp-action="Delete"
-                   asp-route-id="@Model.Id"
-                   class="btn btn-outline-danger">
+            @Html.AntiForgeryToken()
 
-                    <i class="bi bi-trash me-1"></i>
-                    Delete
+            <input type="hidden"
+                   name="id"
+                   value="@Model.Id" />
 
-                </a>
+            <button type="submit"
+                    class="btn btn-outline-danger">
 
-                <a asp-controller="Todo"
-                   asp-action="Index"
-                   class="btn btn-secondary">
+                <i class="bi bi-trash me-1"></i>
+                Delete
 
-                    Back to Todos
+            </button>
 
-                </a>
+        </form>
 
-            </div>
+        <a asp-controller="Todo"
+           asp-action="Index"
+           class="btn btn-secondary">
 
-        </div>
+            Back to Todos
+
+        </a>
+
+    </div>
+</div>
 
     </div>
 
